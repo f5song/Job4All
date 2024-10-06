@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // ใช้สำหรับไอคอน
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const AccountScreen = () => {
@@ -8,43 +8,71 @@ const AccountScreen = () => {
     <View style={styles.container}>
       {/* Header Section */}
       <LinearGradient
-        colors={['#207FEE', '#FFFFFF']}
+        colors={['#5de76e', '#dcffe1']} 
         style={styles.header}
       >
-        <Text style={styles.headerText}>Account</Text>
+        <Image
+          source={require('../assets/profile.png')} 
+          style={styles.profileImage}
+        />
       </LinearGradient>
 
       {/* Profile Section */}
-      <View style={styles.profileSection}>
-        <Image
-          source={require('../assets/profile.png')}
-          style={styles.profileImage}
-        />
+      <View style={styles.profileInfo}>
         <Text style={styles.nameText}>สุขสมาน สมานใจ</Text>
-        <Text style={styles.titleText}>Programmer</Text>
-        <Text style={styles.descriptionText}>
-          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu.
-        </Text>
+        <Text style={styles.subText}>กรุงเทพ, ประเทศไทย</Text>
       </View>
 
-      {/* Contact Buttons */}
-      <View style={styles.contactSection}>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="phone" size={30} color="#4CAF50" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="envelope" size={30} color="#4CAF50" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="map-marker" size={30} color="#4CAF50" />
-        </TouchableOpacity>
+      {/* Contact Information */}
+      <View style={styles.infoSection}>
+        <View style={styles.infoItem}>
+          <View style={styles.iconCircle}>
+            <FontAwesome name="phone" size={24} color="#4CAF50" />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.label}>เบอร์โทรศัพท์</Text>
+            <Text style={styles.infoText}>0998767656</Text>
+          </View>
+        </View>
+        <View style={styles.infoItem}>
+          <View style={styles.iconCircle}>
+            <FontAwesome name="envelope" size={24} color="#4CAF50" />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.label}>อีเมล</Text>
+            <Text style={styles.infoText}>suksman@gmail.com</Text>
+          </View>
+        </View>
+        <View style={styles.infoItem}>
+          <View style={styles.iconCircle}>
+            <FontAwesome name="map-marker" size={24} color="#4CAF50" />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.label}>ที่อยู่</Text>
+            <Text style={styles.infoText}>กรุงเทพ, ประเทศไทย</Text>
+          </View>
+        </View>
+        <View style={styles.infoItem}>
+          <View style={styles.iconCircle}>
+            <FontAwesome name="wheelchair" size={24} color="#4CAF50" />
+          </View>
+          <View style={styles.infoTextContainer}>
+            <Text style={styles.label}>ประเภทความพิการ</Text>
+            <Text style={styles.infoText}>(1) ทางการมองเห็น</Text>
+          </View>
+        </View>
       </View>
 
       {/* Resume Section */}
-      <TouchableOpacity style={styles.resumeButton}>
-        <Text style={styles.resumeText}>My Resume</Text>
-        <Text style={styles.fileText}>david_resume.pdf</Text>
-        <FontAwesome name="ellipsis-v" size={20} color="#4CAF50" style={styles.ellipsisIcon} />
+      <TouchableOpacity
+        style={styles.resumeButton}
+        onPress={() => Linking.openURL('https://example.com/david_resume.pdf')}
+      >
+        <View style={styles.resumeContent}>
+          <Text style={styles.resumeText}>เรซูเม่ของฉัน</Text>
+          <Text style={styles.fileText}>david_resume.pdf</Text>
+        </View>
+        <FontAwesome name="ellipsis-v" size={20} color="#fff" />
       </TouchableOpacity>
     </View>
   );
@@ -56,75 +84,89 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F8F8',
   },
   header: {
-    backgroundColor: '#333',
-    padding: 20,
-    alignItems: 'center',
+    height: 180,
     justifyContent: 'center',
-  },
-  headerText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginTop: 100,
-  },
-  profileSection: {
     alignItems: 'center',
-    marginTop: -60,
   },
   profileImage: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: '#fff',
+    marginTop: 50,
+  },
+  profileInfo: {
+    alignItems: 'center',
+    marginTop: 10,
   },
   nameText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 10,
+    fontFamily: 'Mitr-Regular',
+    color: '#333',
   },
-  titleText: {
+  subText: {
     fontSize: 16,
     color: '#888',
-    marginBottom: 10,
+    marginTop: 5,
+    fontFamily: 'Mitr-Regular',
   },
-  descriptionText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 30,
+  infoSection: {
+    marginTop: 30,
+    paddingHorizontal: 20,
   },
-  contactSection: {
+  infoItem: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 20,
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  iconButton: {
-    backgroundColor: '#fff',
+  infoTextContainer: {
+    marginLeft: 15,
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+  iconCircle: {
+    backgroundColor: '#DFF7E1', 
+    padding: 10,
+    width: 45,
     borderRadius: 50,
-    padding: 15,
-    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  label: {
+    fontSize: 16,
+    color: '#888',
+    fontFamily: 'Mitr-Regular',
+    marginBottom: 5,
+  },
+  infoText: {
+    fontSize: 18,
+    color: '#333',
+    fontFamily: 'Mitr-Regular',
   },
   resumeButton: {
     backgroundColor: '#4CAF50',
-    padding: 20,
-    marginHorizontal: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    margin: 20,
     borderRadius: 10,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 20,
+    alignItems: 'center',
+  },
+  resumeContent: {
+    flexDirection: 'column',
   },
   resumeText: {
     fontSize: 18,
     color: '#fff',
+    fontFamily: 'Mitr-Regular',
   },
   fileText: {
     fontSize: 14,
     color: '#fff',
-  },
-  ellipsisIcon: {
-    marginLeft: 10,
+    marginTop: 5,
+    fontFamily: 'Mitr-Regular',
   },
 });
 
