@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Keyboard } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as Font from 'expo-font';
 
 const Button = ({ title, onPress }) => (
     <TouchableOpacity style={styles.button} onPress={onPress}>
@@ -8,7 +9,7 @@ const Button = ({ title, onPress }) => (
     </TouchableOpacity>
 );
 
-const InputField = ({ placeholder, value, onChangeText, secureTextEntry, keyboardType }) => (
+const InputField = ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, onFocus }) => (
     <View style={styles.inputContainer}>
         <TextInput
             style={styles.input}
@@ -17,6 +18,7 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry, keyboar
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
+            onFocus={onFocus}
         />
     </View>
 );
@@ -25,10 +27,29 @@ const RegisterScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false); // Initialize showPassword state
+    const [fontsLoaded, setFontsLoaded] = useState(false);
+
+    useEffect(() => {
+        const loadFonts = async () => {
+            await Font.loadAsync({
+                'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
+                'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
+            });
+            setFontsLoaded(true);
+        };
+
+        loadFonts();
+    }, []);
 
     const handleRegister = () => {
         console.log('Registration attempted with:', username, email, password);
+        // Implement registration logic here
     };
+
+    if (!fontsLoaded) {
+        return <ActivityIndicator size="large" color="#0000ff" />; // Loading indicator while fonts are loading
+    }
 
     return (
         <View style={styles.container}>
@@ -57,8 +78,18 @@ const RegisterScreen = ({ navigation }) => {
                 placeholder="รหัสผ่าน"
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
             />
+            <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+            >
+                <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color="gray"
+                />
+            </TouchableOpacity>
 
             <Button title="ลงทะเบียน" onPress={handleRegister} />
 
@@ -84,21 +115,21 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 24,
-        fontWeight: 'bold',
         textAlign: 'center',
         marginTop: 60,
         marginBottom: 10,
+        fontFamily: 'Mitr-Bold',
     },
     subtitle: {
         fontSize: 20,
-        textAlign: 'center',
         marginBottom: 5,
+        fontFamily: 'Mitr-Bold',
     },
     description: {
         fontSize: 14,
         color: 'gray',
-        textAlign: 'center',
         marginBottom: 30,
+        fontFamily: 'Mitr-Regular',
     },
     inputContainer: {
         backgroundColor: 'white',
@@ -113,10 +144,15 @@ const styles = StyleSheet.create({
         shadowRadius: 3.84,
         elevation: 5,
     },
+    eyeIcon: {
+        padding: 10,
+        alignContent: 'flex-end',
+    },
     input: {
         paddingVertical: 15,
         paddingHorizontal: 20,
         fontSize: 16,
+        fontFamily: 'Mitr-Regular',
     },
     button: {
         backgroundColor: '#4CAF50',
@@ -140,31 +176,28 @@ const styles = StyleSheet.create({
     loginButtonText: {
         color: '#4DB15E',
         fontSize: 16,
-        fontWeight: 'bold',
+        fontFamily: 'Mitr-Regular',
     },
-
     line: {
-        width: '100%', // ปรับขนาดความกว้างของเส้นกั้น
+        width: '100%',
         height: 5,
-        backgroundColor: '#F5F5F5', // สีของเส้น
-        marginVertical: 20, // ช่องว่างระหว่างเส้นกับปุ่มสร้างบัญชี
-        shadowColor: 'rgba(0, 0, 0, 0.5)', // สีเงา
-        shadowOffset: { width: 0, height: 1 }, // ตำแหน่งของเงา
-        shadowOpacity: 0.8, // ความเข้มของเงา
-        shadowRadius: 4, // รัศมีของเงา
-        elevation: 5, // ใช้สำหรับ Android
-        marginTop: 100,
+        backgroundColor: '#F5F5F5',
+        marginVertical: 20,
+        shadowColor: 'rgba(0, 0, 0, 0.5)',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.8,
+        shadowRadius: 4,
+        elevation: 5,
+        marginTop: 60,
     },
-
     loginText: {
         fontSize: 14,
         color: 'black',
         textAlign: 'center',
         marginBottom: 30,
-        fontWeight: 'bold',
         marginTop: 10,
-
-    }
+        fontFamily: 'Mitr-Regular',
+    },
 });
 
 export default RegisterScreen;
