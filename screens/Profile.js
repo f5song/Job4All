@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const AccountScreen = () => {
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:3000/data');
+        const data = await response.json();
+        console.log('data1000: ', data);
+        setUserData(data.users[0]); 
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []); 
+
   return (
     <View style={styles.container}>
-      {/* Header Section */}
+     
       <LinearGradient
         colors={['#5de76e', '#dcffe1']} 
         style={styles.header}
@@ -17,13 +34,19 @@ const AccountScreen = () => {
         />
       </LinearGradient>
 
-      {/* Profile Section */}
+     
       <View style={styles.profileInfo}>
-        <Text style={styles.nameText}>สุขสมาน สมานใจ</Text>
-        <Text style={styles.subText}>กรุงเทพ, ประเทศไทย</Text>
+        {userData ? ( 
+          <>
+            <Text style={styles.nameText}>{userData.name}</Text>
+            <Text style={styles.subText}>{userData.location?.city}, {userData.location?.country}</Text>
+          </>
+        ) : ( 
+          <Text style={styles.loadingText}></Text>
+        )}
       </View>
 
-      {/* Contact Information */}
+      
       <View style={styles.infoSection}>
         <View style={styles.infoItem}>
           <View style={styles.iconCircle}>
@@ -31,7 +54,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>เบอร์โทรศัพท์</Text>
-            <Text style={styles.infoText}>0998767656</Text>
+            <Text style={styles.infoText}>0998767656</Text> 
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -40,7 +63,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>อีเมล</Text>
-            <Text style={styles.infoText}>suksman@gmail.com</Text>
+            <Text style={styles.infoText}>{userData?.email}</Text> 
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -49,7 +72,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ที่อยู่</Text>
-            <Text style={styles.infoText}>กรุงเทพ, ประเทศไทย</Text>
+            <Text style={styles.infoText}>{userData?.location?.city}, {userData?.location?.country}</Text> 
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -58,12 +81,11 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ประเภทความพิการ</Text>
-            <Text style={styles.infoText}>(1) ทางการมองเห็น</Text>
+            <Text style={styles.infoText}>{userData?.disability_type}</Text> 
           </View>
         </View>
       </View>
 
-      {/* Resume Section */}
       <TouchableOpacity
         style={styles.resumeButton}
         onPress={() => Linking.openURL('https://example.com/david_resume.pdf')}
@@ -106,6 +128,12 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   subText: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 5,
+    fontFamily: 'Mitr-Regular',
+  },
+  loadingText: {
     fontSize: 16,
     color: '#888',
     marginTop: 5,

@@ -29,7 +29,11 @@ const RegisterScreen = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false); // Initialize showPassword state
     const [fontsLoaded, setFontsLoaded] = useState(false);
+    
 
+    
+    
+    
     useEffect(() => {
         const loadFonts = async () => {
             await Font.loadAsync({
@@ -53,6 +57,7 @@ const RegisterScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
+            
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
                 <Ionicons name="arrow-back" size={24} color="black" />
             </TouchableOpacity>
