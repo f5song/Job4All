@@ -11,7 +11,7 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry }) => (
             value={value}
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
-            placeholderTextColor="#B0B0B0" // สีของข้อความ placeholder
+            placeholderTextColor="#B0B0B0"
         />
         {value === '' && (
             <Text style={styles.placeholder}>{placeholder}</Text>
