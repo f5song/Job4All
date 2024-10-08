@@ -17,11 +17,6 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Dashboard">
         <Stack.Screen 
-          name="Splash" 
-          component={SplashScreen} 
-          options={{ headerShown: false }} 
-        />
-        <Stack.Screen 
           name="Welcome" 
           component={WelcomeScreen} 
           options={{ headerShown: false }} 
