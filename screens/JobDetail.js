@@ -99,13 +99,13 @@ const styles = StyleSheet.create({
   },
   jobPosition: {
     fontSize: 14,
-    color: "#6b7280", // สีเทา
-    marginTop: 4, // เพิ่มระยะห่างจากชื่อบริษัท
+    color: "#6b7280", 
+    marginTop: 4, 
   },
   logo: {
     width: 50,
     height: 50,
-    borderRadius: 8, // ทำให้มุมโค้ง
+    borderRadius: 8, 
   },
   jobInfo: {
     flexDirection: "row",

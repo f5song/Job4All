@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
+import { useRoute } from '@react-navigation/native'; // ใช้ useRoute เพื่อรับพารามิเตอร์
 
 const InputField = ({ 
     placeholder, 
@@ -40,6 +41,9 @@ const InputField = ({
 );
 
 const LoginScreen = ({ navigation }) => {
+    const route = useRoute(); // ใช้ useRoute เพื่อรับพารามิเตอร์
+    const { userType } = route.params || {}; // รับค่าที่ส่งมา เช่น userType
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -63,7 +67,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = async () => {
         setLoading(true);
-        setErrorMessage(''); 
+        setErrorMessage('');
         try {
             // Update API URL if necessary
             const response = await fetch('http://10.0.2.2:3000/api/login', {
@@ -81,13 +85,12 @@ const LoginScreen = ({ navigation }) => {
 
             if (response.ok) {
                 Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!');
-
                 navigation.navigate('Home');
             } else {
-                setErrorMessage(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); 
+                setErrorMessage(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
             }
         } catch (error) {
-            setErrorMessage('เกิดข้อผิดพลาด กรุณาลองอีกครั้ง'); 
+            setErrorMessage('เกิดข้อผิดพลาด กรุณาลองอีกครั้ง');
         } finally {
             setLoading(false);
         }
@@ -100,7 +103,7 @@ const LoginScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
 
-            <Text style={styles.subtitle}>เข้าสู่ระบบ</Text>
+            <Text style={styles.subtitle}>เข้าสู่ระบบ{userType}</Text>
             <Text style={styles.description}>กรุณาเข้าสู่ระบบบัญชีที่ลงทะเบียนไว้</Text>
 
             <InputField 
@@ -142,7 +145,7 @@ const LoginScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.line} />
-            <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
+            <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register', { userType })}>
                 <Text style={styles.createAccountText}>สร้างบัญชี</Text>
             </TouchableOpacity>
         </View>

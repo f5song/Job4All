@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
+import { useRoute } from '@react-navigation/native';
 
 const InputField = ({ 
     placeholder, 
@@ -38,6 +39,9 @@ const InputField = ({
 );
 
 const RegisterScreen = ({ navigation }) => {
+    const route = useRoute(); 
+    const { userType } = route.params || {}; 
+
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -82,6 +86,7 @@ const RegisterScreen = ({ navigation }) => {
                     username,
                     email,
                     password,
+                    userType, 
                 }),
             });
 
@@ -100,7 +105,7 @@ const RegisterScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.subtitle}>สร้างบัญชี</Text>
+            <Text style={styles.subtitle}>สร้างบัญชีสำหรับ{userType}</Text>
             <Text style={styles.description}>โปรดกรอกรายละเอียดด้านล่าง</Text>
 
             {/* Username Input */}
@@ -147,7 +152,7 @@ const RegisterScreen = ({ navigation }) => {
 
             <Text style={styles.loginText}>คุณมีบัญชีแล้ว?</Text>
             <View style={styles.line} />
-            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login', { userType })}>
                 <Text style={styles.loginButtonText}>เข้าสู่ระบบ</Text>
             </TouchableOpacity>
         </View>
