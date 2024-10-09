@@ -85,7 +85,7 @@ const LoginScreen = ({ navigation }) => {
 
             if (response.ok) {
                 Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!');
-                navigation.navigate('Home');
+                navigation.navigate('Dashboard');
             } else {
                 setErrorMessage(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
             }
