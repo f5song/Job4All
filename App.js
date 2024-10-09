@@ -36,10 +36,6 @@ export default function App() {
           name="Dashboard"
           component={DashboardScreen}
         />
-        <Stack.Screen 
-          name="UserList" 
-          component={UserListScreen} 
-        />
         <Stack.Screen
           name="Search"
           component={SearchScreen}
