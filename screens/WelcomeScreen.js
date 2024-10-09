@@ -1,14 +1,21 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const WelcomeScreen = () => {
+  const navigation = useNavigation();
+
+  const handleNavigate = (role) => {
+    navigation.navigate('Login', { userType: role });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.logoText}>Job4All</Text>
       <Text style={styles.subText}>แอพลิเคชันหางานสำหรับผู้พิการ</Text>
       <Text style={styles.continueText}>ดำเนินการต่อโดย</Text>
 
-      <TouchableOpacity style={styles.optionButton}>
+      <TouchableOpacity style={styles.optionButton} onPress={() => handleNavigate('ผู้หางาน')}>
         <View style={styles.optionContent}>
           <Image style={styles.icon} source={require('../assets/hiring.png')} />
           <View style={styles.optionTextContainer}>
@@ -18,7 +25,7 @@ const WelcomeScreen = () => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.optionButton}>
+      <TouchableOpacity style={styles.optionButton} onPress={() => handleNavigate('บริษัท')}>
         <View style={styles.optionContent}>
           <Image style={styles.icon} source={require('../assets/company.png')} />
           <View style={styles.optionTextContainer}>

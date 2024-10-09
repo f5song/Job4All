@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
+import { useRoute } from '@react-navigation/native';
 
-const Button = ({ title, onPress }) => (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-        <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-);
-
-const InputField = ({ placeholder, value, onChangeText, secureTextEntry, keyboardType, onFocus }) => (
+const InputField = ({ 
+    placeholder, 
+    value, 
+    onChangeText, 
+    secureTextEntry, 
+    keyboardType, 
+    showPassword, 
+    setShowPassword 
+}) => (
     <View style={styles.inputContainer}>
         <TextInput
             style={styles.input}
@@ -18,70 +21,9 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry, keyboar
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
-            onFocus={onFocus}
         />
-    </View>
-);
-
-const RegisterScreen = ({ navigation }) => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false); // Initialize showPassword state
-    const [fontsLoaded, setFontsLoaded] = useState(false);
-
-
-    useEffect(() => {
-        const loadFonts = async () => {
-            await Font.loadAsync({
-                'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
-                'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
-            });
-            setFontsLoaded(true);
-        };
-
-        loadFonts();
-    }, []);
-
-    const handleRegister = () => {
-        console.log('Registration attempted with:', username, email, password);
-        // Implement registration logic here
-    };
-
-    if (!fontsLoaded) {
-        return <ActivityIndicator size="large" color="#0000ff" />; // Loading indicator while fonts are loading
-    }
-
-    return (
-        <View style={styles.container}>
-
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
-
-            <Text style={styles.title}>บริษัท</Text>
-            <Text style={styles.subtitle}>สร้างบัญชี</Text>
-            <Text style={styles.description}>โปรดกรอกรายละเอียดด้านล่าง</Text>
-
-            <InputField
-                placeholder="ชื่อผู้ใช้"
-                value={username}
-                onChangeText={setUsername}
-            />
-
-            <InputField
-                placeholder="อีเมล"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-            />
-
-            <InputField
-                placeholder="รหัสผ่าน"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPassword}
-            />
+        {/* ไอคอนเปิด/ปิดรหัสผ่าน */}
+        {setShowPassword && (
             <TouchableOpacity
                 style={styles.eyeIcon}
                 onPress={() => setShowPassword(!showPassword)}
@@ -92,12 +34,140 @@ const RegisterScreen = ({ navigation }) => {
                     color="gray"
                 />
             </TouchableOpacity>
+        )}
+    </View>
+);
 
-            <Button title="ลงทะเบียน" onPress={handleRegister} />
+const RegisterScreen = ({ navigation }) => {
+    const route = useRoute(); 
+    const { userType } = route.params || {}; 
 
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState(''); 
+    const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [fontsLoaded, setFontsLoaded] = useState(false);
+
+    useEffect(() => {
+        const loadFonts = async () => {
+            await Font.loadAsync({
+                'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
+                'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
+                'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
+            });
+            setFontsLoaded(true);
+        };
+
+        loadFonts();
+    }, []);
+
+    const handleRegister = async () => {
+        // ตรวจสอบว่าข้อมูลทั้งหมดถูกกรอกหรือไม่
+        if (!username || !email || !password || !confirmPassword) {
+            setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+    
+        // ตรวจสอบรูปแบบของอีเมล
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // รูปแบบอีเมล
+        if (!emailRegex.test(email)) {
+            setErrorMessage('โปรดกรอกอีเมลในรูปแบบที่ถูกต้อง');
+            return;
+        }
+    
+        // ตรวจสอบความยาวของรหัสผ่าน
+        if (password.length < 6) { // กำหนดความยาวขั้นต่ำของรหัสผ่าน
+            setErrorMessage('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');
+            return;
+        }
+    
+        // ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
+        if (password !== confirmPassword) {
+            setErrorMessage('รหัสผ่านไม่ตรงกัน');
+            return;
+        }
+    
+        setErrorMessage('');
+    
+        try {
+            const response = await fetch('http://10.0.2.2:3000/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username,
+                    email,
+                    password,
+                    userType, 
+                }),
+            });
+    
+            const data = await response.json(); 
+    
+            if (response.ok) {
+                navigation.navigate('Login', { userType }); 
+            } else {
+                setErrorMessage(data.error);
+            }
+        } catch (error) {
+            setErrorMessage('เกิดข้อผิดพลาดระหว่างการลงทะเบียน');
+        }
+    };
+    
+
+    return (
+        <View style={styles.container}>
+            <Text style={styles.subtitle}>สร้างบัญชีสำหรับ{userType}</Text>
+            <Text style={styles.description}>โปรดกรอกรายละเอียดด้านล่าง</Text>
+
+            {/* Username Input */}
+            <InputField
+                placeholder="ชื่อผู้ใช้"
+                value={username}
+                onChangeText={setUsername}
+            />
+
+            {/* Email Input */}
+            <InputField
+                placeholder="อีเมล"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+            />
+
+            {/* Password Input with eye icon */}
+            <InputField
+                placeholder="รหัสผ่าน"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+            />
+
+            {/* Confirm Password Input with eye icon */}
+            <InputField
+                placeholder="ยืนยันรหัสผ่าน"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+            />
+
+            {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+            {/* Register Button */}
+            <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <Text style={styles.buttonText}>ลงทะเบียน</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.loginText}>คุณมีบัญชีแล้ว?</Text>
             <View style={styles.line} />
-            <Text style={styles.loginText}>คุณมีบัญชีแล้ว</Text>
-            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login')}>
+            <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate('Login', { userType })}>
                 <Text style={styles.loginButtonText}>เข้าสู่ระบบ</Text>
             </TouchableOpacity>
         </View>
@@ -109,29 +179,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
         padding: 20,
-    },
-    backButton: {
-        position: 'absolute',
-        top: 40,
-        left: 20,
-    },
-    title: {
-        fontSize: 24,
-        textAlign: 'center',
-        marginTop: 60,
-        marginBottom: 10,
-        fontFamily: 'Mitr-Bold',
-    },
-    subtitle: {
-        fontSize: 20,
-        marginBottom: 5,
-        fontFamily: 'Mitr-Bold',
-    },
-    description: {
-        fontSize: 14,
-        color: 'gray',
-        marginBottom: 30,
-        fontFamily: 'Mitr-Regular',
     },
     inputContainer: {
         backgroundColor: 'white',
@@ -145,16 +192,19 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3.84,
         elevation: 5,
-    },
-    eyeIcon: {
-        padding: 10,
-        alignContent: 'flex-end',
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     input: {
+        flex: 1,
         paddingVertical: 15,
         paddingHorizontal: 20,
         fontSize: 16,
         fontFamily: 'Mitr-Regular',
+    },
+    eyeIcon: {
+        paddingHorizontal: 10, 
+        justifyContent: 'center',
     },
     button: {
         backgroundColor: '#4CAF50',
@@ -166,14 +216,37 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Mitr-Medium',
     },
-    loginButton: {
-        backgroundColor: '#D9FFDF',
-        borderRadius: 25,
-        padding: 15,
-        alignItems: 'center',
-        marginTop: 1,
+    errorText: {
+        color: '#FF4C4C',
+        backgroundColor: '#FFEDED',
+        textAlign: 'center',
+        marginBottom: 15,
+        fontSize: 16,
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderWidth: 1,
+        borderColor: '#FF4C4C',
+        fontFamily: 'Mitr-Regular',
+    },
+    subtitle: {
+        fontSize: 20,
+        fontFamily: 'Mitr-Medium',
+    },
+    description: {
+        fontSize: 14,
+        color: 'gray',
+        marginBottom: 30,
+        fontFamily: 'Mitr-Regular',
+    },
+    loginText: {
+        fontSize: 14,
+        color: 'black',
+        textAlign: 'center',
+        marginTop: 40,
+        fontFamily: 'Mitr-Regular',
     },
     loginButtonText: {
         color: '#4DB15E',
@@ -190,15 +263,13 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.8,
         shadowRadius: 4,
         elevation: 5,
-        marginTop: 60,
     },
-    loginText: {
-        fontSize: 14,
-        color: 'black',
-        textAlign: 'center',
-        marginBottom: 30,
-        marginTop: 10,
-        fontFamily: 'Mitr-Regular',
+    loginButton: {
+        backgroundColor: '#D9FFDF',
+        borderRadius: 25,
+        padding: 15,
+        alignItems: 'center',
+        marginTop: 1,
     },
 });
 

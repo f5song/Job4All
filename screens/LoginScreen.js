@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
+import { useRoute } from '@react-navigation/native'; // ใช้ useRoute เพื่อรับพารามิเตอร์
 
-const InputField = ({ placeholder, value, onChangeText, secureTextEntry }) => (
+const InputField = ({ 
+    placeholder, 
+    value, 
+    onChangeText, 
+    secureTextEntry, 
+    showPassword, 
+    setShowPassword 
+}) => (
     <View style={styles.inputContainer}>
         <TextInput
             style={styles.input}
@@ -11,20 +19,37 @@ const InputField = ({ placeholder, value, onChangeText, secureTextEntry }) => (
             value={value}
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
-            placeholderTextColor="#B0B0B0" // สีของข้อความ placeholder
+            placeholderTextColor="#B0B0B0"
         />
         {value === '' && (
             <Text style={styles.placeholder}>{placeholder}</Text>
         )}
+        {/* ไอคอนเปิด/ปิดรหัสผ่าน */}
+        {setShowPassword && (
+            <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+            >
+                <Ionicons
+                    name={showPassword ? 'eye-off' : 'eye'}
+                    size={24}
+                    color="gray"
+                />
+            </TouchableOpacity>
+        )}
     </View>
 );
 
-// Component หลัก
 const LoginScreen = ({ navigation }) => {
+    const route = useRoute(); // ใช้ useRoute เพื่อรับพารามิเตอร์
+    const { userType } = route.params || {}; // รับค่าที่ส่งมา เช่น userType
+
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [fontsLoaded, setFontsLoaded] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(''); // State for error message
 
     useEffect(() => {
         const loadFonts = async () => {
@@ -40,22 +65,45 @@ const LoginScreen = ({ navigation }) => {
         loadFonts();
     }, []);
 
-    const handleLogin = () => {
-        console.log('Login attempted with:', username, password);
+    const handleLogin = async () => {
+        setLoading(true);
+        setErrorMessage('');
+        try {
+            // Update API URL if necessary
+            const response = await fetch('http://10.0.2.2:3000/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!');
+                navigation.navigate('Home');
+            } else {
+                setErrorMessage(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+            }
+        } catch (error) {
+            setErrorMessage('เกิดข้อผิดพลาด กรุณาลองอีกครั้ง');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    if (!fontsLoaded) {
+    if (!fontsLoaded || loading) {
         return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="black" />
-            </TouchableOpacity>
 
-            <Text style={styles.title}>บริษัท</Text>
-            <Text style={styles.subtitle}>เข้าสู่ระบบ</Text>
+            <Text style={styles.subtitle}>เข้าสู่ระบบ{userType}</Text>
             <Text style={styles.description}>กรุณาเข้าสู่ระบบบัญชีที่ลงทะเบียนไว้</Text>
 
             <InputField 
@@ -69,17 +117,14 @@ const LoginScreen = ({ navigation }) => {
                 value={password} 
                 onChangeText={setPassword} 
                 secureTextEntry={!showPassword} 
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
             />
-            <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-            >
-                <Ionicons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={24}
-                    color="gray"
-                />
-            </TouchableOpacity>
+
+            {/* Display error message */}
+            {errorMessage !== '' && (
+                <Text style={styles.errorText}>{errorMessage}</Text>
+            )}
 
             <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                 <Text style={styles.loginButtonText}>เข้าสู่ระบบ</Text>
@@ -100,14 +145,14 @@ const LoginScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.line} />
-            <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register')}>
+            <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('Register', { userType })}>
                 <Text style={styles.createAccountText}>สร้างบัญชี</Text>
             </TouchableOpacity>
         </View>
     );
 };
 
-// สไตล์ของคุณที่นี่
+// Your styles here
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -124,19 +169,19 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 60,
         marginBottom: 10,
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     subtitle: {
         fontSize: 20,
         marginBottom: 5,
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     description: {
         fontSize: 14,
         color: 'gray',
         textAlign: 'flex-start',
         marginBottom: 30,
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     inputContainer: {
         backgroundColor: 'white',
@@ -162,14 +207,14 @@ const styles = StyleSheet.create({
     placeholder: {
         position: 'absolute',
         left: 20,
-        top: 15, // ปรับตำแหน่งให้ตรงกับ TextInput
+        top: 15, // Adjust position to align with TextInput
         fontSize: 16,
         color: '#B0B0B0',
-        fontFamily: 'Mitr-Regular', // ฟอนต์ที่คุณต้องการ
+        fontFamily: 'Mitr-Regular',
     },
     eyeIcon: {
         padding: 10,
-        alignContent:'flex-end',
+        alignContent: 'flex-end',
     },
     loginButton: {
         backgroundColor: '#4CAF50',
@@ -181,15 +226,14 @@ const styles = StyleSheet.create({
     loginButtonText: {
         color: 'white',
         fontSize: 18,
-        fontWeight: 'bold',
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     orText: {
         textAlign: 'center',
         marginTop: 20,
         marginBottom: 20,
         color: 'black',
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     socialButtons: {
         flexDirection: 'row',
@@ -227,8 +271,7 @@ const styles = StyleSheet.create({
     createAccountText: {
         color: '#4DB15E',
         fontSize: 16,
-        fontWeight: 'bold',
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     forgetpasswordText: {
         color: '#787878',
@@ -241,15 +284,23 @@ const styles = StyleSheet.create({
     },
     line: {
         width: '100%',
-        height: 5,
-        backgroundColor: '#F5F5F5',
-        marginVertical: 20,
-        shadowColor: 'rgba(0, 0, 0, 0.5)',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 5,
-        marginTop: 40,
+        height: 1,
+        backgroundColor: 'lightgray',
+        marginTop: 10,
+        marginBottom: 10,
+    },
+    errorText: {
+        color: '#FF4C4C',
+        backgroundColor: '#FFEDED',
+        textAlign: 'center',
+        marginBottom: 15,
+        fontSize: 16,
+        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderWidth: 1,
+        borderColor: '#FF4C4C',
+        fontFamily: 'Mitr-Regular',
     },
 });
 

@@ -5,7 +5,6 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import ProfileScreen from './screens/Profile';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import UserListScreen from './screens/UserListScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import SearchScreen from './screens/SearchScreen';
 

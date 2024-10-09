@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Image } from 'react-native';
 import * as Font from 'expo-font';
-import { LinearGradient } from 'expo-linear-gradient'; // นำเข้า LinearGradient
+import { LinearGradient } from 'expo-linear-gradient'; 
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [userData, setUserData] = useState(null); // แก้ไข useState แยกตัวแปรออกจากกัน
+  const [userData, setUserData] = useState(null); 
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -41,7 +41,7 @@ const DashboardScreen = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#BDFAC7','#72D282' ]} // ใช้ LinearGradient
+        colors={['#BDFAC7','#72D282' ]} 
         style={styles.header}
       >
         <Text style={styles.headerText}>สุขสบาย สำนึกใจ</Text>
