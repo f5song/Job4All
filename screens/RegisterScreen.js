@@ -3,12 +3,6 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 
-const Button = ({ title, onPress }) => (
-    <TouchableOpacity style={styles.button} onPress={onPress}>
-        <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-);
-
 const InputField = ({ 
     placeholder, 
     value, 
@@ -47,6 +41,7 @@ const RegisterScreen = ({ navigation }) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState(''); 
     const [showPassword, setShowPassword] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -56,6 +51,7 @@ const RegisterScreen = ({ navigation }) => {
             await Font.loadAsync({
                 'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
                 'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
+                'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
             });
             setFontsLoaded(true);
         };
@@ -64,8 +60,13 @@ const RegisterScreen = ({ navigation }) => {
     }, []);
 
     const handleRegister = async () => {
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !confirmPassword) {
             setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            setErrorMessage('รหัสผ่านไม่ตรงกัน');
             return;
         }
 
@@ -127,6 +128,16 @@ const RegisterScreen = ({ navigation }) => {
                 setShowPassword={setShowPassword}
             />
 
+            {/* Confirm Password Input with eye icon */}
+            <InputField
+                placeholder="ยืนยันรหัสผ่าน"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry={!showPassword}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+            />
+
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
             {/* Register Button */}
@@ -148,7 +159,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
         padding: 20,
-        
     },
     inputContainer: {
         backgroundColor: 'white',
@@ -186,7 +196,7 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontSize: 18,
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium',
     },
     errorText: {
         color: '#FF4C4C',
@@ -223,12 +233,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Mitr-Regular',
     },
-    buttonText: {
-        color: 'white',
-        fontSize: 18,
-        fontFamily: 'Mitr-Regular',
-        textAlign: 'center',
-    },
     line: {
         width: '100%',
         height: 5,
@@ -247,8 +251,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 1,
     },
-    
-    
 });
 
 export default RegisterScreen;
