@@ -8,46 +8,43 @@ mongoose.connect('mongodb://localhost:27017/job4all')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB:', err));
 
-
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true }, 
-  email: { type: String, required: true, unique: true }, 
-  password: { type: String, required: true }, 
+    username: { type: String, required: true, unique: true }, 
+    email: { type: String, required: true, unique: true }, 
+    password: { type: String, required: true }, 
+    userType: { type: String, required: true } // เพิ่ม userType
 });
-
 const User = mongoose.model('User', userSchema);
 
 app.use(express.json());
 
 
 app.post('/api/register', async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, userType } = req.body;
 
-
-  if (!username || !email || !password) {
-    return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
+  if (!username || !email || !password || !userType) { // ตรวจสอบ userType
+      return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
   }
 
   try {
-    const existingUserByEmail = await User.findOne({ email });
-    if (existingUserByEmail) {
-      return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' });
-    }
+      const existingUserByEmail = await User.findOne({ email });
+      if (existingUserByEmail) {
+          return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' });
+      }
 
-    const existingUserByUsername = await User.findOne({ username });
-    if (existingUserByUsername) {
-      return res.status(400).json({ error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
-    }
+      const existingUserByUsername = await User.findOne({ username });
+      if (existingUserByUsername) {
+          return res.status(400).json({ error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
+      }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
-    
-    res.status(201).json({ message: 'ลงทะเบียนผู้ใช้สำเร็จ' });
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({ username, email, password: hashedPassword, userType }); // บันทึก userType
+      await newUser.save();
+      
+      res.status(201).json({ message: 'ลงทะเบียนผู้ใช้สำเร็จ' });
   } catch (error) {
-    console.error('Error during registration:', error);
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะลงทะเบียน โปรดลองใหม่อีกครั้ง.' });
+      console.error('Error during registration:', error);
+      res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะลงทะเบียน โปรดลองใหม่อีกครั้ง.' });
   }
 });
 

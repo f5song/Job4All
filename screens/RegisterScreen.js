@@ -64,18 +64,33 @@ const RegisterScreen = ({ navigation }) => {
     }, []);
 
     const handleRegister = async () => {
+        // ตรวจสอบว่าข้อมูลทั้งหมดถูกกรอกหรือไม่
         if (!username || !email || !password || !confirmPassword) {
             setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
             return;
         }
-
+    
+        // ตรวจสอบรูปแบบของอีเมล
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // รูปแบบอีเมล
+        if (!emailRegex.test(email)) {
+            setErrorMessage('โปรดกรอกอีเมลในรูปแบบที่ถูกต้อง');
+            return;
+        }
+    
+        // ตรวจสอบความยาวของรหัสผ่าน
+        if (password.length < 6) { // กำหนดความยาวขั้นต่ำของรหัสผ่าน
+            setErrorMessage('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');
+            return;
+        }
+    
+        // ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
         if (password !== confirmPassword) {
             setErrorMessage('รหัสผ่านไม่ตรงกัน');
             return;
         }
-
+    
         setErrorMessage('');
-
+    
         try {
             const response = await fetch('http://10.0.2.2:3000/api/register', {
                 method: 'POST',
@@ -89,12 +104,11 @@ const RegisterScreen = ({ navigation }) => {
                     userType, 
                 }),
             });
-
-            const text = await response.text();
-            const data = JSON.parse(text);
-
+    
+            const data = await response.json(); 
+    
             if (response.ok) {
-                navigation.navigate('Login');
+                navigation.navigate('Login', { userType }); 
             } else {
                 setErrorMessage(data.error);
             }
@@ -102,6 +116,7 @@ const RegisterScreen = ({ navigation }) => {
             setErrorMessage('เกิดข้อผิดพลาดระหว่างการลงทะเบียน');
         }
     };
+    
 
     return (
         <View style={styles.container}>
