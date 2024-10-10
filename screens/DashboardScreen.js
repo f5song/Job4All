@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import * as Font from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from '@react-navigation/native'; // Import navigation
+import { useNavigation } from "@react-navigation/native"; // Import navigation
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -34,18 +34,17 @@ const DashboardScreen = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const response = await fetch('http://10.0.2.2:3000/api/jobs');
+        const response = await fetch("http://10.0.2.2:3000/api/jobs");
         const data = await response.json();
         setJobs(data);
 
-        // สุ่มงานที่แนะนำ
         const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 3 งาน
         setRecommendedJobs(randomJobs);
       } catch (error) {
-        console.error('Error fetching jobs:', error);
+        console.error("Error fetching jobs:", error);
       }
     };
-  
+
     fetchJobs();
   }, []);
 
@@ -62,14 +61,14 @@ const DashboardScreen = () => {
           style={styles.profileImage}
         />
       </LinearGradient>
-      
-      <TouchableOpacity onPress={() => navigation.navigate('Search')}> 
+
+      <TouchableOpacity onPress={() => navigation.navigate("Search")}>
         {/* เมื่อกดช่องค้นหา จะไปที่ SearchScreen */}
         <View style={styles.headerSearch}>
           <TextInput
             style={styles.searchInput}
             placeholder="ค้นหางานที่นี่..."
-            editable={false} // ปิดการแก้ไขข้อความเพื่อบังคับให้กดเท่านั้น
+            editable={false} 
           />
         </View>
       </TouchableOpacity>
@@ -78,7 +77,13 @@ const DashboardScreen = () => {
         <Text style={styles.sectionTitle}>งานล่าสุด</Text>
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
           {jobs.map((job) => (
-            <TouchableOpacity key={job._id} style={styles.horizontalJobCard}>
+            <TouchableOpacity
+              key={job._id}
+              style={styles.horizontalJobCard}
+              onPress={() =>
+                navigation.navigate("JobDetail", { jobId: job._id })
+              }
+            >
               <Text style={styles.jobTitle}>{job.job_title}</Text>
               <Text style={styles.jobLocation}>{job.job_location}</Text>
               <Text style={styles.jobSalary}>{job.job_salary}</Text>
@@ -89,7 +94,13 @@ const DashboardScreen = () => {
         <Text style={styles.sectionTitle}>งานที่แนะนำ</Text>
         <View style={styles.recommendations}>
           {recommendedJobs.map((job) => (
-            <TouchableOpacity key={job._id} style={styles.jobCard}>
+            <TouchableOpacity
+              key={job._id}
+              style={styles.jobCard}
+              onPress={() =>
+                navigation.navigate("JobDetail", { jobId: job._id })
+              } 
+            >
               <Text style={styles.jobTitle}>{job.job_title}</Text>
               <Text style={styles.jobLocation}>{job.job_location}</Text>
               <Text style={styles.jobSalary}>{job.job_salary}</Text>

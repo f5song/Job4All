@@ -22,7 +22,6 @@ const SearchScreen = () => {
   const [provinceQuery, setProvinceQuery] = useState(""); // สร้างสถานะสำหรับการค้นหาจังหวัด
   const [filteredProvinces, setFilteredProvinces] = useState(thaiProvinces); // เก็บรายการจังหวัดที่กรองแล้ว
 
-  // โหลดฟอนต์ที่ต้องการ
   useEffect(() => {
     Font.loadAsync({
       "Mitr-Regular": require("../assets/fonts/Mitr-Regular.ttf"),
@@ -32,7 +31,6 @@ const SearchScreen = () => {
       .then(() => setFontsLoaded(true))
       .catch((error) => console.error(error));
 
-    // เรียกข้อมูลงานจากฐานข้อมูล
     fetchJobListings();
   }, []);
 
@@ -51,7 +49,6 @@ const SearchScreen = () => {
     filterJobs();
   }, [searchQuery, selectedFilters]);
 
-  // ฟังก์ชันสำหรับการเลือกฟิลเตอร์
   const toggleFilter = (filter) => {
     setSelectedFilters((prev) =>
       prev.includes(filter)
@@ -60,7 +57,6 @@ const SearchScreen = () => {
     );
   };
 
-  // ฟังก์ชันสำหรับการกรองงาน
   const filterJobs = () => {
     const filtered = jobListings.filter((job) => {
       const matchesSearchQuery = job.job_title
@@ -79,10 +75,9 @@ const SearchScreen = () => {
     setFilteredJobs(filtered);
   };
 
-  // ฟังก์ชันกรองจังหวัด
   useEffect(() => {
     if (provinceQuery === "") {
-      setFilteredProvinces(thaiProvinces); // แสดงจังหวัดทั้งหมดหากไม่ได้พิมพ์
+      setFilteredProvinces(thaiProvinces);
     } else {
       const filtered = thaiProvinces.filter((province) =>
         province.name_th.includes(provinceQuery)
@@ -151,7 +146,6 @@ const SearchScreen = () => {
       <ScrollView style={styles.jobList}>
         {filteredJobs.map((job) => (
           <View key={job._id} style={styles.jobCard}>
-            <View style={styles.icon} />
             <View style={styles.jobInfo}>
               <Text style={styles.companyName}>{job.company_name}</Text>
               <Text style={styles.jobTitle}>{job.job_title}</Text>
@@ -339,13 +333,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     flexDirection: "row",
     alignItems: "center",
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    backgroundColor: "#ccc",
-    borderRadius: 20,
-    marginRight: 10,
   },
   jobInfo: {
     flex: 1,
