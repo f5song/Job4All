@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const app = express();
 
-
 mongoose.connect('mongodb://localhost:27017/job4all')
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Could not connect to MongoDB:', err));
+
 
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true }, 
@@ -23,36 +23,55 @@ const userSchema = new mongoose.Schema({
 
 
 const User = mongoose.model('User', userSchema);
-// สร้าง API ที่จะให้ React Native เรียกใช้งาน
 app.get('/data', async (req, res) => {
   try {
-      const users = await User.find(); // ใช้โมเดลที่คุณสร้าง
-      res.json({ users }); // ส่งข้อมูลผู้ใช้กลับ
+      const users = await User.find(); 
+      res.json({ users });
   } catch (error) {
       res.status(500).send(error.message);
   }
 });
-
 
 const jobListingSchema = new mongoose.Schema({
   job_title: { type: String, required: true },
   job_location: { type: String, required: true },
   job_salary: { type: String, required: true },
   job_description: { type: String, required: true },
-}, { collection: 'job_listings' }); // กำหนดชื่อ collection ที่มีอยู่แล้ว
+  company_name: { type: String, required: true },
+  province: { type: String, required: true },
+  job_type: { type: String }, 
+  work_schedule: { type: String }, 
+}, { collection: 'job_listings' });
+
 
 const JobListing = mongoose.model('JobListing', jobListingSchema);
 
 app.get('/api/jobs', async (req, res) => {
+  const { search, job_type, work_schedule, province } = req.query; 
+
+  const filter = {}; 
+
+  if (search) {
+    filter.job_title = { $regex: search, $options: 'i' }; 
+  }
+  if (job_type) {
+    filter.job_type = job_type; 
+  }
+  if (work_schedule) {
+    filter.work_schedule = work_schedule; 
+  }
+  if (province) {
+    filter.province = province;  // ฟิลเตอร์ตาม province
+  }
+
   try {
-    const jobs = await JobListing.find(); // ดึงข้อมูลงานจาก collection job_listings
-    res.json(jobs); // ส่งงานกลับไปยัง client
+    const jobs = await JobListing.find(filter); 
+    res.json(jobs); 
   } catch (error) {
     console.error('Error fetching jobs:', error);
     res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลงาน' });
   }
 });
-
 
 app.use(express.json());
 
@@ -76,7 +95,7 @@ app.post('/api/register', async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword, userType }); // บันทึก userType
+        const newUser = new User({ username, email, password: hashedPassword, userType }); 
         await newUser.save();
         
         res.status(201).json({ message: 'ลงทะเบียนผู้ใช้สำเร็จ' });

@@ -1,30 +1,99 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
-import * as Font from 'expo-font';
-import { MaterialIcons } from '@expo/vector-icons'; // ใช้ไอคอนจาก Material Icons
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+} from "react-native";
+import * as Font from "expo-font";
+import { MaterialIcons } from "@expo/vector-icons";
+import thaiProvinces from "../assets/data/thai_province.json"; // นำเข้าข้อมูลจังหวัด
 
 const SearchScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [jobListings, setJobListings] = useState([]);
+  const [filteredJobs, setFilteredJobs] = useState([]);
+  const [provinceQuery, setProvinceQuery] = useState(""); // สร้างสถานะสำหรับการค้นหาจังหวัด
+  const [filteredProvinces, setFilteredProvinces] = useState(thaiProvinces); // เก็บรายการจังหวัดที่กรองแล้ว
 
   // โหลดฟอนต์ที่ต้องการ
-  Font.loadAsync({
-    'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
-    'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
-    'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
-  }).then(() => setFontsLoaded(true)).catch(error => console.error(error));
+  useEffect(() => {
+    Font.loadAsync({
+      "Mitr-Regular": require("../assets/fonts/Mitr-Regular.ttf"),
+      "Mitr-Bold": require("../assets/fonts/Mitr-Bold.ttf"),
+      "Mitr-Medium": require("../assets/fonts/Mitr-Medium.ttf"),
+    })
+      .then(() => setFontsLoaded(true))
+      .catch((error) => console.error(error));
 
-  if (!fontsLoaded) {
-    return null; 
-  }
+    // เรียกข้อมูลงานจากฐานข้อมูล
+    fetchJobListings();
+  }, []);
+
+  const fetchJobListings = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:3000/api/jobs"); // เปลี่ยนเป็น API ที่คุณใช้
+      const data = await response.json();
+      setJobListings(data);
+      setFilteredJobs(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    filterJobs();
+  }, [searchQuery, selectedFilters]);
 
   // ฟังก์ชันสำหรับการเลือกฟิลเตอร์
   const toggleFilter = (filter) => {
     setSelectedFilters((prev) =>
-      prev.includes(filter) ? prev.filter((item) => item !== filter) : [...prev, filter]
+      prev.includes(filter)
+        ? prev.filter((item) => item !== filter)
+        : [...prev, filter]
     );
   };
+
+  // ฟังก์ชันสำหรับการกรองงาน
+  const filterJobs = () => {
+    const filtered = jobListings.filter((job) => {
+      const matchesSearchQuery = job.job_title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+  
+      const matchesFilters = selectedFilters.every((filter) => 
+        filter === job.job_type ||
+        filter === job.work_schedule ||
+        filter === job.province
+      );
+  
+      return matchesSearchQuery && matchesFilters;
+    });
+    
+    setFilteredJobs(filtered);
+  };
+
+  // ฟังก์ชันกรองจังหวัด
+  useEffect(() => {
+    if (provinceQuery === "") {
+      setFilteredProvinces(thaiProvinces); // แสดงจังหวัดทั้งหมดหากไม่ได้พิมพ์
+    } else {
+      const filtered = thaiProvinces.filter((province) =>
+        province.name_th.includes(provinceQuery)
+      );
+      setFilteredProvinces(filtered);
+    }
+  }, [provinceQuery]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
@@ -33,10 +102,15 @@ const SearchScreen = () => {
         <View style={styles.searchWrapper}>
           <TextInput
             style={styles.searchInput}
-            placeholder="ค้นหา"
-            placeholderTextColor="#ccc" 
+            placeholder="ค้นหางานที่นี่..."
+            placeholderTextColor="#ccc"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
-          <TouchableOpacity style={styles.clearButton}>
+          <TouchableOpacity
+            style={styles.clearButton}
+            onPress={() => setSearchQuery("")}
+          >
             <Text style={styles.clearButtonText}>X</Text>
           </TouchableOpacity>
         </View>
@@ -45,10 +119,13 @@ const SearchScreen = () => {
       <View style={styles.top}>
         <View style={styles.topText}>
           <Text style={styles.sectionTitle}>ผลลัพธ์</Text>
-          <Text style={styles.sectionsecon}>45 งาน</Text>
+          <Text style={styles.sectionsecon}>{filteredJobs.length} งาน</Text>
         </View>
 
-        <TouchableOpacity style={styles.filterIcon} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.filterIcon}
+          onPress={() => setModalVisible(true)}
+        >
           <MaterialIcons name="filter-list" size={24} color="#4DB15E" />
         </TouchableOpacity>
       </View>
@@ -58,8 +135,13 @@ const SearchScreen = () => {
         {selectedFilters.map((filter, index) => (
           <View key={index} style={styles.selectedFilter}>
             <Text style={styles.filterText}>{filter}</Text>
-            <TouchableOpacity style={styles.clearfilter} onPress={() => toggleFilter(filter)}>
-              <Text style={styles.clearButtonfilter}>X</Text>
+            <TouchableOpacity
+              style={styles.clearfilter}
+              onPress={() => toggleFilter(filter)}
+            >
+              <View style={styles.circle}>
+                <Text style={styles.clearButtonfilter}>X</Text>
+              </View>
             </TouchableOpacity>
           </View>
         ))}
@@ -67,19 +149,17 @@ const SearchScreen = () => {
 
       {/* Job Listings */}
       <ScrollView style={styles.jobList}>
-        {/* Job Cards */}
-        {/* (The job cards can be rendered here dynamically as per your data) */}
-        {/* ตัวอย่าง Job Card */}
-        <View style={styles.jobCard}>
-          <View style={styles.icon} />
-          <View style={styles.jobInfo}>
-            <Text style={styles.companyName}>Darkseer Studios</Text>
-            <Text style={styles.jobTitle}>Senior Software Engineer</Text>
-            <Text style={styles.salary}>฿15,000 - ฿25,000</Text>
-            <Text style={styles.location}>Medan, Indonesia</Text>
+        {filteredJobs.map((job) => (
+          <View key={job._id} style={styles.jobCard}>
+            <View style={styles.icon} />
+            <View style={styles.jobInfo}>
+              <Text style={styles.companyName}>{job.company_name}</Text>
+              <Text style={styles.jobTitle}>{job.job_title}</Text>
+              <Text style={styles.salary}>{job.job_salary}</Text>
+              <Text style={styles.location}>{job.job_location}</Text>
+            </View>
           </View>
-        </View>
-        {/* ... */}
+        ))}
       </ScrollView>
 
       {/* Filter Modal */}
@@ -92,12 +172,63 @@ const SearchScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>เลือกฟิลเตอร์</Text>
-            {['งานประจำ', 'กรุงเทพ', 'ทำงานที่บ้าน', 'รายชั่วโมง'].map((filter, index) => (
-              <TouchableOpacity key={index} style={styles.filterOption} onPress={() => toggleFilter(filter)}>
+
+            {/* ประเภทการทำงาน */}
+            <Text style={styles.filterCategoryTitle}>ประเภทการทำงาน</Text>
+            {["ทำงานที่บ้าน", "ทำงานนอกสถานที่"].map((filter, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.filterOption}
+                onPress={() => toggleFilter(filter)}
+              >
                 <Text style={styles.filterText}>{filter}</Text>
-                {selectedFilters.includes(filter) && <Text style={styles.selectedIndicator}>✓</Text>}
+                {selectedFilters.includes(filter) && (
+                  <Text style={styles.selectedIndicator}>✓</Text>
+                )}
               </TouchableOpacity>
             ))}
+
+            {/* ประเภทงาน */}
+            <Text style={styles.filterCategoryTitle}>ประเภทงาน</Text>
+            {["งานประจำ", "พาร์ทไทม์", "รายชั่วโมง"].map((filter, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.filterOption}
+                onPress={() => toggleFilter(filter)}
+              >
+                <Text style={styles.filterText}>{filter}</Text>
+                {selectedFilters.includes(filter) && (
+                  <Text style={styles.selectedIndicator}>✓</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+
+            {/* จังหวัด */}
+            <Text style={styles.filterCategoryTitle}>จังหวัด</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="พิมพ์เพื่อค้นหาจังหวัด"
+              placeholderTextColor="#ccc"
+              value={provinceQuery}
+              onChangeText={setProvinceQuery}
+              keyboardType="default"
+              returnKeyType="done"
+            />
+            <ScrollView style={styles.provinceList} nestedScrollEnabled={true}>
+              {filteredProvinces.map((province) => (
+                <TouchableOpacity
+                  key={province.id}
+                  style={styles.filterOption}
+                  onPress={() => toggleFilter(province.name_th)}
+                >
+                  <Text style={styles.filterText}>{province.name_th}</Text>
+                  {selectedFilters.includes(province.name_th) && (
+                    <Text style={styles.selectedIndicator}>✓</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <TouchableOpacity
               style={styles.applyButton}
               onPress={() => setModalVisible(false)}
@@ -110,190 +241,185 @@ const SearchScreen = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   searchContainer: {
     marginBottom: 20,
   },
   searchWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
+    position: "relative",
+    justifyContent: "center",
   },
   searchInput: {
     paddingLeft: 40,
     padding: 12,
     borderRadius: 25,
-    backgroundColor: 'white',
-    shadowColor: '#000',
+    backgroundColor: "white",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 5,
-    width: '100%',
-    fontFamily: 'Mitr-Medium',
+    width: "100%",
+    fontFamily: "Mitr-Regular",
   },
   clearButton: {
-    position: 'absolute',
+    position: "absolute",
     right: 10,
-    padding: 10,
-    backgroundColor: '#ccc',
-    borderRadius: 25,
-    zIndex: 1,
+    top: 12,
   },
   clearButtonText: {
-    fontSize: 16,
-    fontFamily: 'Mitr-Medium',
+    fontSize: 18,
+    color: "#999",
   },
   top: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
   },
   topText: {
-    marginLeft: 10,
+    flexDirection: "column",
   },
   sectionTitle: {
-    fontSize: 20,
-    fontFamily: 'Mitr-Medium',
+    fontSize: 18,
+    fontFamily: "Mitr-Medium",
   },
   sectionsecon: {
-    fontSize: 15,
-    color: 'gray',
-    marginBottom: 20,
-    fontFamily: 'Mitr-Regular',
+    fontSize: 14,
+    fontFamily: "Mitr-Regular",
+    color: "#888",
   },
   filterIcon: {
-    marginRight: 15,
+    padding: 10,
   },
   filterContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 10,
   },
   selectedFilter: {
-    flexDirection: 'row',
-    backgroundColor: '#D9FFDF',
-    borderRadius: 25,
-    padding: 10,
-    marginLeft: 10,
-    marginBottom: 10,
-    alignItems: 'center',
+    backgroundColor: "#D9FFDF",
+    padding: 5,
+    borderRadius: 15,
+    marginRight: 5,
+    marginBottom: 5,
+    flexDirection: "row",
+    alignItems: "center",
   },
   filterText: {
-    color: '#4DB15E',
-    fontFamily: 'Mitr-Medium',
-    marginRight: 5,
+    fontFamily: "Mitr-Regular",
   },
   clearfilter: {
-    padding: 5,
-    backgroundColor: '#4DB15E',
-    borderRadius: 20,
+    marginLeft: 5,
   },
   clearButtonfilter: {
-    fontSize: 10,
-    color: 'white',
-    fontFamily: 'Mitr-Medium',
+    color: "#FFFFFF",
+    fontSize: 16, // ปรับขนาดตัวอักษรให้เหมาะสม
+  },
+  circle: {
+    backgroundColor: "#4DB15E", // สีพื้นหลังของวงกลม (เช่น สีแดงอ่อน)
+    borderRadius: 20, // ทำให้เป็นวงกลม
+    width: 25, // กำหนดความกว้างของวงกลม
+    height: 25, // กำหนดความสูงของวงกลม
+    justifyContent: "center", // จัดกึ่งกลางแนวตั้ง
+    alignItems: "center", // จัดกึ่งกลางแนวนอน
   },
   jobList: {
     flex: 1,
   },
   jobCard: {
-    flexDirection: 'row',
-    padding: 15,
-    backgroundColor: 'white',
-    borderRadius: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    marginVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
   },
   icon: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
-    backgroundColor: '#ccc',
-    marginRight: 15,
+    width: 40,
+    height: 40,
+    backgroundColor: "#ccc",
+    borderRadius: 20,
+    marginRight: 10,
   },
   jobInfo: {
     flex: 1,
   },
   companyName: {
-    fontSize: 12,
-    color: '#555',
-    fontFamily: 'Mitr-Medium',
+    fontSize: 16,
+    fontFamily: "Mitr-Medium",
   },
   jobTitle: {
-    fontSize: 16,
-    marginBottom: 5,
-    fontFamily: 'Mitr-Medium',
+    fontSize: 14,
+    fontFamily: "Mitr-Regular",
   },
   salary: {
     fontSize: 14,
-    color: '#4DB15E',
-    fontFamily: 'Mitr-Medium',
+    fontFamily: "Mitr-Regular",
+    color: "#4DB15E",
   },
   location: {
     fontSize: 12,
-    color: '#777',
-    fontFamily: 'Mitr-Regular',
+    fontFamily: "Mitr-Regular",
+    color: "#888",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // เพิ่มสีพื้นหลังให้มืด
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
-    width: '80%',
-    backgroundColor: 'white',
-    borderRadius: 15,
+    width: "90%",
+    backgroundColor: "white",
+    borderRadius: 20,
     padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 5,
+    alignItems: "flex-start",
   },
   modalTitle: {
-    fontSize: 20,
-    fontFamily: 'Mitr-Medium',
-    marginBottom: 20,
+    fontSize: 18,
+    fontFamily: "Mitr-Medium",
+    marginBottom: 10,
+  },
+  filterCategoryTitle: {
+    fontSize: 16,
+    fontFamily: "Mitr-Medium",
+    marginTop: 15,
   },
   filterOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     paddingVertical: 10,
-    paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ddd",
   },
   selectedIndicator: {
-    color: '#4DB15E',
     fontSize: 18,
-    fontFamily: 'Mitr-Medium',
+    color: "#4DB15E",
   },
   applyButton: {
+    backgroundColor: "#4DB15E",
+    borderRadius: 20,
+    padding: 10,
+    alignItems: "center",
     marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#4DB15E',
-    borderRadius: 25,
+    width: "100%",
   },
   applyButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontFamily: 'Mitr-Medium',
+    color: "white",
+    fontFamily: "Mitr-Medium",
   },
+  provinceList: {
+    maxHeight: 200, 
+    marginTop: 10, // เพิ่มระยะห่างด้านบน
+    width: "100%", // ให้แน่ใจว่ามีความกว้างเต็มที่
+  },  
 });
 
 export default SearchScreen;
-
