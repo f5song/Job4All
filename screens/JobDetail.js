@@ -1,8 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
 
-export default function Component() {
+export default function JobDetailScreen() {
+  const [job, setJob] = useState(null);
+
+  // ฟังก์ชันดึงข้อมูลจาก API
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const response = await fetch("http://10.0.2.2:3000/api/jobs/12345"); // ใช้ ID ที่ถูกต้องจาก URL
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setJob(data); // เก็บข้อมูล job ใน state
+      } catch (error) {
+        console.error("Error fetching job:", error);
+      }
+    };
+
+    fetchJob();
+  }, []);
+
+  if (!job) {
+    return (
+      <View style={styles.container}>
+        <Text>กำลังโหลด...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -19,11 +47,11 @@ export default function Component() {
         {/* Company Info */}
         <View style={styles.companyInfo}>
           <View>
-            <Text style={styles.companyName}>Highspeed Studios</Text>
-            <Text style={styles.jobPosition}>Senior Software Engineer</Text>
+            <Text style={styles.companyName}>{job.company_name}</Text> {/* แทนที่ด้วยข้อมูลจริง */}
+            <Text style={styles.jobPosition}>{job.job_title}</Text>
           </View>
           <Image
-            source={{ uri: "https://via.placeholder.com/50" }}
+            source={{ uri: job.company_logo || "https://via.placeholder.com/50" }} // ใส่ logo จาก API
             style={styles.logo}
           />
         </View>
@@ -31,29 +59,21 @@ export default function Component() {
         {/* Job Info */}
         <View style={styles.jobInfo}>
           <Feather name="map-pin" size={24} color="gray" />
-          <Text style={styles.text}>กรุงเทพ, ประเทศไทย</Text>
+          <Text style={styles.text}>{job.job_location}</Text> {/* ข้อมูลสถานที่ */}
         </View>
         <View style={styles.salaryInfo}>
           <Feather name="dollar-sign" size={24} color="gray" />
-          <Text style={styles.text}>15000 THB - 20000 THB/เดือน</Text>
+          <Text style={styles.text}>{job.job_salary}</Text> {/* ข้อมูลเงินเดือน */}
         </View>
         <View style={styles.badges}>
-          <Text style={styles.badge}>งานประจำ</Text>
-          <Text style={styles.badge}>ทำงานที่บ้าน</Text>
-          <Text style={styles.badge}>รายชั่วโมง</Text>
+          {job.job_types.map((type, index) => (
+            <Text key={index} style={styles.badge}>{type}</Text> // ตัวอย่างงาน เช่น งานประจำ, ทำงานที่บ้าน
+          ))}
         </View>
 
         <View style={styles.details}>
           <Text style={styles.subtitle}>รายละเอียดงาน</Text>
-          <Text style={styles.description}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-          </Text>
-          <View style={styles.bullets}>
-            <Text style={styles.bullet}>• Sed ut perspiciatis unde omnis</Text>
-            <Text style={styles.bullet}>• Doloremque laudantium</Text>
-            <Text style={styles.bullet}>• Ipsa quae ab illo inventore</Text>
-            <Text style={styles.bullet}>• Sunt explicabo</Text>
-          </View>
+          <Text style={styles.description}>{job.job_description}</Text> {/* แทนที่ด้วยรายละเอียดงานจริง */}
         </View>
       </View>
 

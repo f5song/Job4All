@@ -14,7 +14,8 @@ import { LinearGradient } from "expo-linear-gradient";
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [jobs, setJobs] = useState([]); // State สำหรับเก็บข้อมูลงาน
+  const [recommendedJobs, setRecommendedJobs] = useState([]); // สำหรับเก็บงานที่สุ่มแนะนำ
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -28,6 +29,27 @@ const DashboardScreen = () => {
     loadFonts();
   }, []);
 
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:3000/api/jobs');
+        const data = await response.json();
+        setJobs(data);
+
+        // สุ่มงานที่แนะนำ
+        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 3 งาน
+        setRecommendedJobs(randomJobs);
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    };
+  
+    fetchJobs();
+  }, []);
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -46,70 +68,26 @@ const DashboardScreen = () => {
       </View>
 
       <View style={styles.container}>
-        <View style={styles.statsContainer}>
-          <TouchableOpacity
-            style={styles.statCardGreen}
-            onPress={() => alert("ตำแหน่งงานที่สมัคร")}
-          >
-            <Text style={styles.statValue}>29</Text>
-            <Text style={styles.statLabel}>ตำแหน่งงานที่สมัคร</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.statCardBlue}
-            onPress={() => alert("สัมภาษณ์")}
-          >
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>สัมภาษณ์</Text>
-          </TouchableOpacity>
-        </View>
-
         <Text style={styles.sectionTitle}>งานล่าสุด</Text>
-        {/* แนวนอน */}
         <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>Product Manager</Text>
-            <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
-            <Text style={styles.jobSalary}>฿70,000 - ฿90,000</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>UX/UI Designer</Text>
-            <Text style={styles.jobLocation}>Chiang Mai, Thailand</Text>
-            <Text style={styles.jobSalary}>฿50,000 - ฿70,000</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>Full Stack Developer</Text>
-            <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
-            <Text style={styles.jobSalary}>฿80,000 - ฿120,000</Text>
-          </TouchableOpacity>
+          {jobs.map((job) => (
+            <TouchableOpacity key={job._id} style={styles.horizontalJobCard}>
+              <Text style={styles.jobTitle}>{job.job_title}</Text>
+              <Text style={styles.jobLocation}>{job.job_location}</Text>
+              <Text style={styles.jobSalary}>{job.job_salary}</Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
 
         <Text style={styles.sectionTitle}>งานที่แนะนำ</Text>
         <View style={styles.recommendations}>
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Software Engineer</Text>
-            <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Database Engineer</Text>
-            <Text style={styles.jobLocation}>London, United Kingdom</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Software Engineer</Text>
-            <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Senior Software Engineer</Text>
-            <Text style={styles.jobLocation}>Medan, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
+          {recommendedJobs.map((job) => (
+            <TouchableOpacity key={job._id} style={styles.jobCard}>
+              <Text style={styles.jobTitle}>{job.job_title}</Text>
+              <Text style={styles.jobLocation}>{job.job_location}</Text>
+              <Text style={styles.jobSalary}>{job.job_salary}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
     </ScrollView>
@@ -162,56 +140,14 @@ const styles = StyleSheet.create({
     elevation: 5,
     fontFamily: "Mitr-Regular",
   },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  statCardGreen: {
-    backgroundColor: "#72D282",
-    borderRadius: 25,
-    padding: 15,
-    flex: 1,
-    marginHorizontal: 5,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  statCardBlue: {
-    backgroundColor: "#48A9F8",
-    borderRadius: 25,
-    padding: 15,
-    flex: 1,
-    marginHorizontal: 5,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
-    fontFamily: "Mitr-Bold",
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "white",
-    fontFamily: "Mitr-Regular",
-  },
-  recommendations: {
-    flex: 1,
-  },
   sectionTitle: {
     fontSize: 18,
     marginBottom: 10,
     marginTop: 20,
     fontFamily: "Mitr-Medium",
+  },
+  recommendations: {
+    flex: 1,
   },
   jobCard: {
     backgroundColor: "white",
@@ -228,8 +164,8 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 15,
     padding: 15,
-    marginRight: 15, 
-    width: 200, 
+    marginRight: 15,
+    width: 200,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -238,17 +174,15 @@ const styles = StyleSheet.create({
   },
   jobTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "Mitr-Bold",
+    fontFamily: "Mitr-Medium",
   },
   jobLocation: {
     color: "gray",
     fontFamily: "Mitr-Regular",
   },
   jobSalary: {
-    fontWeight: "bold",
     color: "#4CAF50",
-    fontFamily: "Mitr-Bold",
+    fontFamily: "Mitr-Medium",
   },
 });
 

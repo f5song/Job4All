@@ -6,7 +6,6 @@ import WelcomeScreen from './screens/WelcomeScreen';
 import ProfileScreen from './screens/Profile';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
-import DashboardScreen from './screens/DashboardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +36,7 @@ export default function App() {
           name="Dashboard"
           component={DashboardScreen}
         />
+
       </Stack.Navigator>
     </NavigationContainer>
     
