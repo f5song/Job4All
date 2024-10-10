@@ -11,11 +11,13 @@ import {
 } from "react-native";
 import * as Font from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from '@react-navigation/native'; // Import navigation
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [jobs, setJobs] = useState([]); // State สำหรับเก็บข้อมูลงาน
   const [recommendedJobs, setRecommendedJobs] = useState([]); // สำหรับเก็บงานที่สุ่มแนะนำ
+  const navigation = useNavigation(); // ใช้ navigation
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -60,12 +62,17 @@ const DashboardScreen = () => {
           style={styles.profileImage}
         />
       </LinearGradient>
-      <View style={styles.headerSearch}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="ค้นหางานที่นี่..."
-        />
-      </View>
+      
+      <TouchableOpacity onPress={() => navigation.navigate('Search')}> 
+        {/* เมื่อกดช่องค้นหา จะไปที่ SearchScreen */}
+        <View style={styles.headerSearch}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="ค้นหางานที่นี่..."
+            editable={false} // ปิดการแก้ไขข้อความเพื่อบังคับให้กดเท่านั้น
+          />
+        </View>
+      </TouchableOpacity>
 
       <View style={styles.container}>
         <Text style={styles.sectionTitle}>งานล่าสุด</Text>

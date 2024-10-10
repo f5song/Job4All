@@ -5,7 +5,6 @@ import { Feather } from "@expo/vector-icons";
 export default function JobDetailScreen() {
   const [job, setJob] = useState(null);
 
-  // ฟังก์ชันดึงข้อมูลจาก API
   useEffect(() => {
     const fetchJob = async () => {
       try {

@@ -1,27 +1,31 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import MySVGIcon from '../assets/searchIcon'; // นำเข้าจากไฟล์ที่สร้างไว้
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import * as Font from 'expo-font';
+import { MaterialIcons } from '@expo/vector-icons'; // ใช้ไอคอนจาก Material Icons
 
 const SearchScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState([]);
 
-  useEffect(() => {
-    const loadFonts = async () => {
-      await Font.loadAsync({
-        'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
-        'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
-        'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
-      });
-      setFontsLoaded(true);
-    };
-
-    loadFonts();
-  }, []);
+  // โหลดฟอนต์ที่ต้องการ
+  Font.loadAsync({
+    'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
+    'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
+    'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
+  }).then(() => setFontsLoaded(true)).catch(error => console.error(error));
 
   if (!fontsLoaded) {
-    return null; // หรือแสดง loading spinner ถ้าต้องการ
+    return null; 
   }
+
+  // ฟังก์ชันสำหรับการเลือกฟิลเตอร์
+  const toggleFilter = (filter) => {
+    setSelectedFilters((prev) =>
+      prev.includes(filter) ? prev.filter((item) => item !== filter) : [...prev, filter]
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Search Bar */}
@@ -29,164 +33,99 @@ const SearchScreen = () => {
         <View style={styles.searchWrapper}>
           <TextInput
             style={styles.searchInput}
-            placeholder=" ค้นหา"
-            placeholderTextColor="#ccc" // กำหนดสีของ placeholder ถ้าต้องการ
+            placeholder="ค้นหา"
+            placeholderTextColor="#ccc" 
           />
           <TouchableOpacity style={styles.clearButton}>
-            <Text style={styles.clearButtonText}>  X  </Text>
+            <Text style={styles.clearButtonText}>X</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.top}>
         <View style={styles.topText}>
-          <Text style={styles.sectionTitle}> ผลลัพธ์ </Text>
-          <Text style={styles.sectionsecon}> 45 งาน </Text>
+          <Text style={styles.sectionTitle}>ผลลัพธ์</Text>
+          <Text style={styles.sectionsecon}>45 งาน</Text>
         </View>
 
-        <TouchableOpacity style={styles.topSVG} onPress={() => alert('เลือกประเภท')}>
-          <MySVGIcon />
+        <TouchableOpacity style={styles.filterIcon} onPress={() => setModalVisible(true)}>
+          <MaterialIcons name="filter-list" size={24} color="#4DB15E" />
         </TouchableOpacity>
       </View>
 
       {/* Filter Section */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity style={styles.filterButton}>
-          <TouchableOpacity style={styles.clearfilter}>
-            <Text style={styles.clearButtonfilter}> X </Text>
-          </TouchableOpacity>
-          <Text style={styles.filterText}>งานประจำ</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filterButton}>
-          <TouchableOpacity style={styles.clearfilter}>
-            <Text style={styles.clearButtonfilter}> X </Text>
-          </TouchableOpacity>
-          <Text style={styles.filterText}>กรุงเทพ</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filterButton}>
-          <TouchableOpacity style={styles.clearfilter}>
-            <Text style={styles.clearButtonfilter}> X </Text>
-          </TouchableOpacity>          
-          <Text style={styles.filterText}>ทำงานที่บ้าน</Text>
-
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.filterButton}>
-          <TouchableOpacity style={styles.clearfilter}>
-            <Text style={styles.clearButtonfilter}> X </Text>
-          </TouchableOpacity>          
-          <Text style={styles.filterText}>รายชั่วโมง</Text>
-
-        </TouchableOpacity>
+        {selectedFilters.map((filter, index) => (
+          <View key={index} style={styles.selectedFilter}>
+            <Text style={styles.filterText}>{filter}</Text>
+            <TouchableOpacity style={styles.clearfilter} onPress={() => toggleFilter(filter)}>
+              <Text style={styles.clearButtonfilter}>X</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
       </View>
-
 
       {/* Job Listings */}
       <ScrollView style={styles.jobList}>
+        {/* Job Cards */}
+        {/* (The job cards can be rendered here dynamically as per your data) */}
+        {/* ตัวอย่าง Job Card */}
         <View style={styles.jobCard}>
           <View style={styles.icon} />
           <View style={styles.jobInfo}>
             <Text style={styles.companyName}>Darkseer Studios</Text>
             <Text style={styles.jobTitle}>Senior Software Engineer</Text>
-            <Text style={styles.salary}>$500 - $1,000</Text>
+            <Text style={styles.salary}>฿15,000 - ฿25,000</Text>
             <Text style={styles.location}>Medan, Indonesia</Text>
           </View>
         </View>
-
-        <View style={styles.jobCard}>
-          <View style={[styles.icon, { backgroundColor: '#8A2BE2' }]} />
-          <View style={styles.jobInfo}>
-            <Text style={styles.companyName}>Lunar Djaja Corp.</Text>
-            <Text style={styles.jobTitle}>Database Engineer</Text>
-            <Text style={styles.salary}>$500 - $1,000</Text>
-            <Text style={styles.location}>London, United Kingdom</Text>
-          </View>
-        </View>
-
-        <View style={styles.jobCard}>
-          <View style={[styles.icon, { backgroundColor: '#FF6347' }]} />
-          <View style={styles.jobInfo}>
-            <Text style={styles.companyName}>Highspeed Studios</Text>
-            <Text style={styles.jobTitle}>Junior Software Engineer</Text>
-            <Text style={styles.salary}>$500 - $1,000</Text>
-            <Text style={styles.location}>Jakarta, Indonesia</Text>
-          </View>
-        </View>
+        {/* ... */}
       </ScrollView>
+
+      {/* Filter Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>เลือกฟิลเตอร์</Text>
+            {['งานประจำ', 'กรุงเทพ', 'ทำงานที่บ้าน', 'รายชั่วโมง'].map((filter, index) => (
+              <TouchableOpacity key={index} style={styles.filterOption} onPress={() => toggleFilter(filter)}>
+                <Text style={styles.filterText}>{filter}</Text>
+                {selectedFilters.includes(filter) && <Text style={styles.selectedIndicator}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity
+              style={styles.applyButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.applyButtonText}>ใช้ฟิลเตอร์</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  filterContainer: {
-    flexDirection: 'row', // จัดเรียงให้เป็นแถว
-    flexWrap: 'wrap', // ถ้าจำเป็นให้มีการห่อหุ้มเมื่อไม่พอพื้นที่
-    marginBottom: 20, // กำหนดระยะห่างระหว่างส่วนนี้กับส่วนอื่น
-  },
-  filterButton: {
-    flexDirection: 'row', // จัดเรียงให้เป็นแถว
-    backgroundColor: '#D9FFDF', // สีพื้นหลัง
-    borderRadius: 25, // มุมโค้ง
-    padding: 10, // ช่องว่างภายใน
-    marginLeft: 10, // ช่องว่างระหว่างปุ่ม
-    marginBottom: 10, // ช่องว่างระหว่างแถว
-    paddingHorizontal: 10,
-  },
-  filterText: {
-    marginRight: 5,
-    marginLeft: 5, // ช่องว่างระหว่างข้อความและปุ่มลบ
-    color: '#4DB15E', // สีของข้อความ
-    fontFamily: 'Mitr-Medium',
-  },
-  clearfilter: {
-    padding: 5,
-    backgroundColor: '#4DB15E',
-    borderRadius: 25,
-  },
-  clearButtonfilter: {
-    fontSize: 10, // ขนาดของไอคอนลบ
-    color: 'white',
-    fontFamily: 'Mitr-Bold',
-    
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontFamily: 'Mitr-Bold',
-  },
-  sectionsecon: {
-    fontSize: 15,
-    color: 'gray',
-    marginBottom: 20,
-    fontFamily: 'Mitr-Regular',
-  },
   container: {
     flex: 1,
     padding: 20,
     backgroundColor: '#F5F5F5',
   },
-  top: {
-    flexDirection: 'row', // จัดเรียงให้เป็นแถว
-    justifyContent: 'space-between', // จัดให้แต่ละส่วนอยู่ตรงข้ามกัน
-  },
-  topText: {
-    marginLeft: 10,
-    fontFamily: 'Mitr-Bold',
-  },
-  topSVG: {
-    marginRight: 15,
-  },
   searchContainer: {
     marginBottom: 20,
-    // สามารถปรับ margin และ layout ของ searchContainer ตามต้องการ
   },
   searchWrapper: {
     position: 'relative',
     justifyContent: 'center',
   },
   searchInput: {
-    paddingLeft: 40, // เพิ่ม padding เพื่อให้ clearButton ไม่ทับกับ text
+    paddingLeft: 40,
     padding: 12,
     borderRadius: 25,
     backgroundColor: 'white',
@@ -195,20 +134,70 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 5,
-    width: '100%', // กำหนดให้ input กว้างเต็มพื้นที่ parent
+    width: '100%',
     fontFamily: 'Mitr-Medium',
   },
   clearButton: {
     position: 'absolute',
-    right: 10, // ให้อยู่ติดริมซ้าย
+    right: 10,
     padding: 10,
     backgroundColor: '#ccc',
     borderRadius: 25,
-    zIndex: 1, // ทำให้ปุ่มอยู่บนสุด
+    zIndex: 1,
   },
   clearButtonText: {
     fontSize: 16,
-    fontFamily: 'Mitr-Bold',
+    fontFamily: 'Mitr-Medium',
+  },
+  top: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  topText: {
+    marginLeft: 10,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: 'Mitr-Medium',
+  },
+  sectionsecon: {
+    fontSize: 15,
+    color: 'gray',
+    marginBottom: 20,
+    fontFamily: 'Mitr-Regular',
+  },
+  filterIcon: {
+    marginRight: 15,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+  },
+  selectedFilter: {
+    flexDirection: 'row',
+    backgroundColor: '#D9FFDF',
+    borderRadius: 25,
+    padding: 10,
+    marginLeft: 10,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  filterText: {
+    color: '#4DB15E',
+    fontFamily: 'Mitr-Medium',
+    marginRight: 5,
+  },
+  clearfilter: {
+    padding: 5,
+    backgroundColor: '#4DB15E',
+    borderRadius: 20,
+  },
+  clearButtonfilter: {
+    fontSize: 10,
+    color: 'white',
+    fontFamily: 'Mitr-Medium',
   },
   jobList: {
     flex: 1,
@@ -243,16 +232,68 @@ const styles = StyleSheet.create({
   jobTitle: {
     fontSize: 16,
     marginBottom: 5,
-    fontFamily: 'Mitr-Bold',
+    fontFamily: 'Mitr-Medium',
   },
   salary: {
-    color: '#72D282',
-    fontFamily: 'Mitr-Bold',
+    fontSize: 14,
+    color: '#4DB15E',
+    fontFamily: 'Mitr-Medium',
   },
   location: {
-    color: '#555',
+    fontSize: 12,
+    color: '#777',
+    fontFamily: 'Mitr-Regular',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // เพิ่มสีพื้นหลังให้มืด
+  },
+  modalView: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: 'Mitr-Medium',
+    marginBottom: 20,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  selectedIndicator: {
+    color: '#4DB15E',
+    fontSize: 18,
+    fontFamily: 'Mitr-Medium',
+  },
+  applyButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#4DB15E',
+    borderRadius: 25,
+  },
+  applyButtonText: {
+    color: 'white',
+    fontSize: 16,
     fontFamily: 'Mitr-Medium',
   },
 });
 
 export default SearchScreen;
+
