@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import WelcomeScreen from './screens/WelcomeScreen';
 import ProfileScreen from './screens/Profile';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
+import DashboardScreen from './screens/DashboardScreen';
+import SearchScreen from './screens/SearchScreen';
+import NotificationScreen from './screens/NotificationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -13,8 +15,7 @@ export default function App() {
   
   return (
     <NavigationContainer>
-      
-      <Stack.Navigator initialRouteName="Welcome">
+      <Stack.Navigator initialRouteName="Notification">
         <Stack.Screen 
           name="Welcome" 
           component={WelcomeScreen} 
@@ -36,7 +37,6 @@ export default function App() {
           name="Dashboard"
           component={DashboardScreen}
         />
-
       </Stack.Navigator>
     </NavigationContainer>
     
