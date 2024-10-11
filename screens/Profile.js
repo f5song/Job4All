@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-
+import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
 const AccountScreen = () => {
   const [userData, setUserData] = useState(null);
 
@@ -96,6 +96,8 @@ const AccountScreen = () => {
         </View>
         <FontAwesome name="ellipsis-v" size={20} color="#fff" />
       </TouchableOpacity>
+      
+      <Navbar style={styles.navbar} />
     </View>
   );
 };
@@ -195,6 +197,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 5,
     fontFamily: 'Mitr-Regular',
+  },
+  navbar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 
