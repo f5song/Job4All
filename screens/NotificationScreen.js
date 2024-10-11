@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
+import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
 
 const notifications = [
     {
@@ -36,22 +37,22 @@ const notifications = [
 
 const NotificationScreen = () => {
     const [fontsLoaded, setFontsLoaded] = useState(false);
-  
+
     useEffect(() => {
-      const loadFonts = async () => {
-        await Font.loadAsync({
-          'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
-          'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
-          'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
-        });
-        setFontsLoaded(true);
-      };
-  
-      loadFonts();
+        const loadFonts = async () => {
+            await Font.loadAsync({
+                'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
+                'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
+                'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
+            });
+            setFontsLoaded(true);
+        };
+
+        loadFonts();
     }, []);
-  
+
     if (!fontsLoaded) {
-      return null; // หรือแสดง loading spinner ถ้าต้องการ
+        return null; // หรือแสดง loading spinner ถ้าต้องการ
     }
     return (
         <View style={styles.container}>

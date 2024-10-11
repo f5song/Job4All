@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import * as Font from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
+import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
+
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -30,89 +32,91 @@ const DashboardScreen = () => {
 
 
   return (
-    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-      <LinearGradient colors={["#BDFAC7", "#72D282"]} style={styles.header}>
-        <Text style={styles.headerText}>สุขสบาย สำนึกใจ</Text>
-        <Image
-          source={require("../assets/profile.png")}
-          style={styles.profileImage}
-        />
-      </LinearGradient>
-      <View style={styles.headerSearch}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="ค้นหางานที่นี่..."
-        />
-      </View>
-
-      <View style={styles.container}>
-        <View style={styles.statsContainer}>
-          <TouchableOpacity
-            style={styles.statCardGreen}
-            onPress={() => alert("ตำแหน่งงานที่สมัคร")}
-          >
-            <Text style={styles.statValue}>29</Text>
-            <Text style={styles.statLabel}>ตำแหน่งงานที่สมัคร</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.statCardBlue}
-            onPress={() => alert("สัมภาษณ์")}
-          >
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>สัมภาษณ์</Text>
-          </TouchableOpacity>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient colors={["#BDFAC7", "#72D282"]} style={styles.header}>
+          <Text style={styles.headerText}>สุขสบาย สำนึกใจ</Text>
+          <Image
+            source={require("../assets/profile.png")}
+            style={styles.profileImage}
+          />
+        </LinearGradient>
+        <View style={styles.headerSearch}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="ค้นหางานที่นี่..."
+          />
         </View>
 
-        <Text style={styles.sectionTitle}>งานล่าสุด</Text>
-        {/* แนวนอน */}
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>Product Manager</Text>
-            <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
-            <Text style={styles.jobSalary}>฿70,000 - ฿90,000</Text>
-          </TouchableOpacity>
+        <View style={styles.container}>
+          <View style={styles.statsContainer}>
+            <TouchableOpacity
+              style={styles.statCardGreen}
+              onPress={() => alert("ตำแหน่งงานที่สมัคร")}
+            >
+              <Text style={styles.statValue}>29</Text>
+              <Text style={styles.statLabel}>ตำแหน่งงานที่สมัคร</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.statCardBlue}
+              onPress={() => alert("สัมภาษณ์")}
+            >
+              <Text style={styles.statValue}>3</Text>
+              <Text style={styles.statLabel}>สัมภาษณ์</Text>
+            </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>UX/UI Designer</Text>
-            <Text style={styles.jobLocation}>Chiang Mai, Thailand</Text>
-            <Text style={styles.jobSalary}>฿50,000 - ฿70,000</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>งานล่าสุด</Text>
+          <ScrollView style={styles.horizonbar} horizontal={true} showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity style={styles.horizontalJobCard}>
+              <Text style={styles.jobTitle}>Product Manager</Text>
+              <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
+              <Text style={styles.jobSalary}>฿70,000 - ฿90,000</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.horizontalJobCard}>
-            <Text style={styles.jobTitle}>Full Stack Developer</Text>
-            <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
-            <Text style={styles.jobSalary}>฿80,000 - ฿120,000</Text>
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity style={styles.horizontalJobCard}>
+              <Text style={styles.jobTitle}>UX/UI Designer</Text>
+              <Text style={styles.jobLocation}>Chiang Mai, Thailand</Text>
+              <Text style={styles.jobSalary}>฿50,000 - ฿70,000</Text>
+            </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>งานที่แนะนำ</Text>
-        <View style={styles.recommendations}>
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Software Engineer</Text>
-            <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.horizontalJobCard}>
+              <Text style={styles.jobTitle}>Full Stack Developer</Text>
+              <Text style={styles.jobLocation}>Bangkok, Thailand</Text>
+              <Text style={styles.jobSalary}>฿80,000 - ฿120,000</Text>
+            </TouchableOpacity>
+          </ScrollView>
 
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Database Engineer</Text>
-            <Text style={styles.jobLocation}>London, United Kingdom</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>งานที่แนะนำ</Text>
+          <View style={styles.recommendations}>
+            <TouchableOpacity style={styles.jobCard}>
+              <Text style={styles.jobTitle}>Software Engineer</Text>
+              <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
+              <Text style={styles.jobSalary}>$500 - $1,000</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Software Engineer</Text>
-            <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.jobCard}>
+              <Text style={styles.jobTitle}>Database Engineer</Text>
+              <Text style={styles.jobLocation}>London, United Kingdom</Text>
+              <Text style={styles.jobSalary}>$500 - $1,000</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.jobCard}>
-            <Text style={styles.jobTitle}>Senior Software Engineer</Text>
-            <Text style={styles.jobLocation}>Medan, Indonesia</Text>
-            <Text style={styles.jobSalary}>$500 - $1,000</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.jobCard}>
+              <Text style={styles.jobTitle}>Software Engineer</Text>
+              <Text style={styles.jobLocation}>Jakarta, Indonesia</Text>
+              <Text style={styles.jobSalary}>$500 - $1,000</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.jobCard}>
+              <Text style={styles.jobTitle}>Senior Software Engineer</Text>
+              <Text style={styles.jobLocation}>Medan, Indonesia</Text>
+              <Text style={styles.jobSalary}>$500 - $1,000</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <Navbar style={styles.navbar} />
+    </View>
   );
 };
 
@@ -120,7 +124,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
-    padding: 20,
+  },
+  horizonbar: {
+    padding: 10,
+    marginLeft: 10,
+    marginRight: 10,
   },
   header: {
     height: 180,
@@ -165,7 +173,8 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 1,
+    margin: 20,
   },
   statCardGreen: {
     backgroundColor: "#72D282",
@@ -206,11 +215,13 @@ const styles = StyleSheet.create({
   },
   recommendations: {
     flex: 1,
+    margin:20, 
   },
   sectionTitle: {
     fontSize: 18,
     marginBottom: 10,
     marginTop: 20,
+    marginLeft: 15,
     fontFamily: "Mitr-Medium",
   },
   jobCard: {
@@ -228,9 +239,9 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 15,
     padding: 15,
-    marginRight: 15, 
-    width: 200, 
-    shadowColor: "#000",
+    marginRight: 15,
+    width: 200,
+    shadowColor: "white",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
@@ -249,6 +260,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#4CAF50",
     fontFamily: "Mitr-Bold",
+  },
+  navbar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
 });
 
