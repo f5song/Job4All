@@ -105,7 +105,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#FF6B6B',
     margin: 10,
     fontFamily: 'Mitr-Bold', // Custom font applied
@@ -138,7 +137,6 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: 'bold',
     color: '#333',
     fontFamily: 'Mitr-Bold', // Custom font applied
   },
@@ -173,7 +171,6 @@ const styles = StyleSheet.create({
   postButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold',
     fontFamily: 'Mitr-Bold', // Custom font applied
   },
 });
