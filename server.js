@@ -15,11 +15,13 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   userType: { type: String, required: true },
   disability_type: String,
-  skills: [String],
   location: {
     city: String,
     country: String,
   },
+  firstName: { type: String },  
+  lastName: { type: String },    
+  companyName: { type: String },  
 });
 
 const User = mongoose.model('User', userSchema);
@@ -51,6 +53,22 @@ app.get('/data', async (req, res) => {
   }
 });
 
+// Route สำหรับดึงข้อมูลผู้ใช้ตาม ID
+app.get('/api/users/id/:id', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'ไม่พบผู้ใช้' });
+    }
+    res.json({ firstName: user.firstName, lastName: user.lastName });
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้' });
+  }
+});
+
+
+
 // Route สำหรับค้นหางานพร้อมฟิลเตอร์
 app.get('/api/jobs', async (req, res) => {
   const { search, job_type, work_schedule, province } = req.query;
@@ -81,7 +99,7 @@ app.get('/api/jobs', async (req, res) => {
 
 app.get('/api/jobs/:id', async (req, res) => {
   try {
-    console.log('Fetching job with ID:', req.params.id); // เพิ่ม log เพื่อดูว่า id ที่ส่งมาถูกต้องไหม
+    console.log('Fetching job with ID:', req.params.id);
     const job = await JobListing.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ error: 'ไม่พบงานที่ต้องการ' });
@@ -95,9 +113,9 @@ app.get('/api/jobs/:id', async (req, res) => {
 
 // Route สำหรับการลงทะเบียนผู้ใช้ใหม่
 app.post('/api/register', async (req, res) => {
-  const { username, email, password, userType } = req.body;
+  const { username, email, password, userType, firstName, lastName, companyName } = req.body;
 
-  // ตรวจสอบว่าใส่ข้อมูลครบถ้วน
+  // ตรวจสอบว่าใส่ข้อมูลครบถ้วนตามประเภทผู้ใช้
   if (!username || !email || !password || !userType) {
     return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
   }
@@ -120,9 +138,30 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
     }
 
+    // ตรวจสอบข้อมูลตาม userType
+    if (userType === 'ผู้หางาน') {
+      if (!firstName || !lastName) {
+        return res.status(400).json({ error: 'โปรดกรอกชื่อจริงและนามสกุล' });
+      }
+    } else if (userType === 'บริษัท') {
+      if (!companyName) {
+        return res.status(400).json({ error: 'โปรดกรอกชื่อบริษัท' });
+      }
+    } else {
+      return res.status(400).json({ error: 'ประเภทผู้ใช้ไม่ถูกต้อง' });
+    }
+
     // เข้ารหัสรหัสผ่าน
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword, userType });
+    const newUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      userType,
+      firstName: userType === 'ผู้หางาน' ? firstName : undefined,
+      lastName: userType === 'ผู้หางาน' ? lastName : undefined,
+      companyName: userType === 'บริษัท' ? companyName : undefined,
+    });
     await newUser.save();
 
     res.status(201).json({ message: 'ลงทะเบียนผู้ใช้สำเร็จ' });
@@ -136,7 +175,6 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
-  // ตรวจสอบว่าใส่ข้อมูลครบถ้วน
   if (!username || !password) {
     return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
   }
@@ -152,7 +190,8 @@ app.post('/api/login', async (req, res) => {
       return res.status(400).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
     }
 
-    res.status(200).json({ message: 'เข้าสู่ระบบสำเร็จ' });
+    // ส่ง ID ของผู้ใช้กลับไปยัง frontend
+    res.status(200).json({ message: 'เข้าสู่ระบบสำเร็จ', userId: user._id });
   } catch (error) {
     console.error('Error during login:', error);
     res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ โปรดลองใหม่อีกครั้ง.' });

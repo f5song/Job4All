@@ -8,11 +8,13 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // นำเข้า useNavigation
 import * as Font from "expo-font";
 import { MaterialIcons } from "@expo/vector-icons";
 import thaiProvinces from "../assets/data/thai_province.json"; // นำเข้าข้อมูลจังหวัด
 
 const SearchScreen = () => {
+  const navigation = useNavigation(); // ใช้งาน navigation
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
@@ -50,11 +52,13 @@ const SearchScreen = () => {
   }, [searchQuery, selectedFilters]);
 
   const toggleFilter = (filter) => {
-    setSelectedFilters((prev) =>
-      prev.includes(filter)
-        ? prev.filter((item) => item !== filter)
-        : [...prev, filter]
-    );
+    setSelectedFilters((prev) => {
+      if (prev.includes(filter)) {
+        return prev.filter((item) => item !== filter);
+      } else {
+        return [...prev, filter];
+      }
+    });
   };
 
   const filterJobs = () => {
@@ -62,16 +66,14 @@ const SearchScreen = () => {
       const matchesSearchQuery = job.job_title
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
-  
-      const matchesFilters = selectedFilters.every((filter) => 
-        filter === job.job_type ||
-        filter === job.work_schedule ||
-        filter === job.province
+
+      const matchesFilters = selectedFilters.every((filter) =>
+        [job.job_type, job.work_schedule, job.province].includes(filter)
       );
-  
+
       return matchesSearchQuery && matchesFilters;
     });
-    
+
     setFilteredJobs(filtered);
   };
 
@@ -145,14 +147,18 @@ const SearchScreen = () => {
       {/* Job Listings */}
       <ScrollView style={styles.jobList}>
         {filteredJobs.map((job) => (
-          <View key={job._id} style={styles.jobCard}>
+          <TouchableOpacity
+            key={job._id}
+            style={styles.jobCard}
+            onPress={() => navigation.navigate("JobDetail", { jobId: job._id })} // นำทางไปยัง JobDetail
+          >
             <View style={styles.jobInfo}>
               <Text style={styles.companyName}>{job.company_name}</Text>
               <Text style={styles.jobTitle}>{job.job_title}</Text>
               <Text style={styles.salary}>{job.job_salary}</Text>
               <Text style={styles.location}>{job.job_location}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
@@ -235,6 +241,7 @@ const SearchScreen = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

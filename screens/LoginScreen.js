@@ -25,7 +25,7 @@ const InputField = ({
             <Text style={styles.placeholder}>{placeholder}</Text>
         )}
         {/* ไอคอนเปิด/ปิดรหัสผ่าน */}
-        {setShowPassword && (
+        {setShowPassword !== undefined && (
             <TouchableOpacity
                 style={styles.eyeIcon}
                 onPress={() => setShowPassword(!showPassword)}
@@ -85,12 +85,10 @@ const LoginScreen = ({ navigation }) => {
 
             if (response.ok) {
                 Alert.alert('เข้าสู่ระบบสำเร็จ', 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!');
-                navigation.navigate('Dashboard');
+                navigation.navigate('Dashboard', { userId: data.userId });
             } else {
                 setErrorMessage(data.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
             }
-        } catch (error) {
-            setErrorMessage('เกิดข้อผิดพลาด กรุณาลองอีกครั้ง');
         } finally {
             setLoading(false);
         }
@@ -102,7 +100,6 @@ const LoginScreen = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-
             <Text style={styles.subtitle}>เข้าสู่ระบบ{userType}</Text>
             <Text style={styles.description}>กรุณาเข้าสู่ระบบบัญชีที่ลงทะเบียนไว้</Text>
 
@@ -158,11 +155,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
         padding: 20,
-    },
-    backButton: {
-        position: 'absolute',
-        top: 40,
-        left: 20,
     },
     title: {
         fontSize: 20,
@@ -290,17 +282,9 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     errorText: {
-        color: '#FF4C4C',
-        backgroundColor: '#FFEDED',
+        color: 'red',
+        marginBottom: 10,
         textAlign: 'center',
-        marginBottom: 15,
-        fontSize: 16,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderWidth: 1,
-        borderColor: '#FF4C4C',
-        fontFamily: 'Mitr-Regular',
     },
 });
 

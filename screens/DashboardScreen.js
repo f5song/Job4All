@@ -1,25 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import * as Font from 'expo-font';
-import AppLoading from 'expo-app-loading'; // Optional, for showing a loading spinner
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+} from "react-native";
+import * as Font from "expo-font";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation, useRoute } from "@react-navigation/native"; // Import navigation and route
+import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
 
-const AddAJobScreen = ({ navigation }) => {
-  const [isJobPositionVisible, setJobPositionVisible] = useState(false);
-  const [isWorkplaceTypeVisible, setWorkplaceTypeVisible] = useState(false);
-  const [isJobLocationVisible, setJobLocationVisible] = useState(false);
-  const [isCompanyVisible, setCompanyVisible] = useState(false);
-  const [isEmploymentTypeVisible, setEmploymentTypeVisible] = useState(false);
-  const [isDescriptionVisible, setDescriptionVisible] = useState(false);
 
-  const [jobPosition, setJobPosition] = useState('');
-  const [workplaceType, setWorkplaceType] = useState('');
-  const [jobLocation, setJobLocation] = useState('');
-  const [company, setCompany] = useState('');
-  const [employmentType, setEmploymentType] = useState('');
-  const [description, setDescription] = useState('');
-
+const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [jobs, setJobs] = useState([]); // State สำหรับเก็บข้อมูลงาน
+  const [recommendedJobs, setRecommendedJobs] = useState([]); // สำหรับเก็บงานที่สุ่มแนะนำ
+  const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' }); // State สำหรับเก็บข้อมูลผู้ใช้
+  const navigation = useNavigation(); // ใช้ navigation
+  const route = useRoute(); // Get route object
+  const { userId } = route.params; // รับ userId จาก props
 
   // Load custom fonts using expo-font
   useEffect(() => {
@@ -32,6 +35,23 @@ const AddAJobScreen = ({ navigation }) => {
     };
 
     loadFonts();
+  }, []);
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch("http://10.0.2.2:3000/api/jobs");
+        const data = await response.json();
+        setJobs(data);
+
+        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 3 งาน
+        setRecommendedJobs(randomJobs);
+      } catch (error) {
+        console.error("Error fetching jobs:", error);
+      }
+    };
+
+    fetchJobs();
   }, []);
 
   if (!fontsLoaded) {
@@ -62,37 +82,77 @@ const AddAJobScreen = ({ navigation }) => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" color="#FF6B6B" size={24} />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.body}>
-        <Text style={styles.headerTitle}>เพิ่มงาน</Text>
-        <ScrollView style={styles.form}>
-          {renderInputField('ตำแหน่งงาน ', jobPosition, setJobPosition, isJobPositionVisible, () => setJobPositionVisible(!isJobPositionVisible))}
-          {renderInputField('รูปแบบการทำงาน', workplaceType, setWorkplaceType, isWorkplaceTypeVisible, () => setWorkplaceTypeVisible(!isWorkplaceTypeVisible))}
-          {renderInputField('สถานที่ปฏิบัติงาน', jobLocation, setJobLocation, isJobLocationVisible, () => setJobLocationVisible(!isJobLocationVisible))}
-          {renderInputField('บริษัท', company, setCompany, isCompanyVisible, () => setCompanyVisible(!isCompanyVisible))}
-          {renderInputField('ประเภทการจ้างงาน', employmentType, setEmploymentType, isEmploymentTypeVisible, () => setEmploymentTypeVisible(!isEmploymentTypeVisible))}
-          {renderInputField('คำอธิบาย', description, setDescription, isDescriptionVisible, () => setDescriptionVisible(!isDescriptionVisible))}
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <LinearGradient colors={["#BDFAC7", "#72D282"]} style={styles.header}>
+        <Text style={styles.headerText}>
+          {userInfo.firstName} {userInfo.lastName}
+        </Text>
+        <Image
+          source={require("../assets/profile.png")}
+          style={styles.profileImage}
+        />
+      </LinearGradient>
+
+      <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+        {/* เมื่อกดช่องค้นหา จะไปที่ SearchScreen */}
+        <View style={styles.headerSearch}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="ค้นหางานที่นี่..."
+            editable={false} 
+          />
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.container}>
+        <Text style={styles.sectionTitle}>งานล่าสุด</Text>
+        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {jobs.map((job) => (
+            <TouchableOpacity
+              key={job._id}
+              style={styles.horizontalJobCard}
+              onPress={() =>
+                navigation.navigate("JobDetail", { jobId: job._id })
+              }
+            >
+              <Text style={styles.jobTitle}>{job.job_title}</Text>
+              <Text style={styles.jobLocation}>{job.job_location}</Text>
+              <Text style={styles.jobSalary}>{job.job_salary}</Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
+
+        <Text style={styles.sectionTitle}>งานที่แนะนำ</Text>
+        <View style={styles.recommendations}>
+          {recommendedJobs.map((job) => (
+            <TouchableOpacity
+              key={job._id}
+              style={styles.jobCard}
+              onPress={() =>
+                navigation.navigate("JobDetail", { jobId: job._id })
+              } 
+            >
+              <Text style={styles.jobTitle}>{job.job_title}</Text>
+              <Text style={styles.jobLocation}>{job.job_location}</Text>
+              <Text style={styles.jobSalary}>{job.job_salary}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
-      {/* Button at the bottom */}
-      <View style={styles.footer}>
-        <TouchableOpacity onPress={handlePost} style={styles.postButton}>
-          <Text style={styles.postButtonText}>เพิ่ม</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#F5F5F5",
+  },
+  horizonbar: {
+    padding: 10,
+    marginLeft: 10,
+    marginRight: 10,
   },
   header: {
     flexDirection: 'row',
@@ -105,15 +165,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF6B6B',
-    margin: 10,
-    fontFamily: 'Mitr-Bold', // Custom font applied
-  },
-  body: {
-    flex: 1,
-    padding: 16,
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 20,
+    fontFamily: "Mitr-Medium",
   },
   form: {
     flex: 1,
@@ -130,11 +184,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  inputHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
+  horizontalJobCard: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 15,
+    marginRight: 15,
+    width: 200,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   inputLabel: {
     fontSize: 16,
@@ -153,29 +213,6 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Mitr-Regular', // Custom font applied
   },
-  footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    alignItems: 'center',
-  },
-  postButton: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 50,
-  },
-  postButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    fontFamily: 'Mitr-Bold', // Custom font applied
-  },
 });
 
-export default AddAJobScreen;
+export default DashboardScreen;

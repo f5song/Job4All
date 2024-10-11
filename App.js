@@ -16,7 +16,11 @@ export default function App() {
   
   return (
     <NavigationContainer>
+<<<<<<< HEAD
       <Stack.Navigator initialRouteName="AddAJob">
+=======
+      <Stack.Navigator initialRouteName="Welcome">
+>>>>>>> 5fcc602700b4c1f19ed0760a11a6a4eb06e34744
         <Stack.Screen 
           name="Welcome" 
           component={WelcomeScreen} 
