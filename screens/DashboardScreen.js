@@ -12,6 +12,8 @@ import {
 import * as Font from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native"; // Import navigation and route
+import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
+
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
