@@ -24,11 +24,12 @@ const DashboardScreen = () => {
   const route = useRoute(); // Get route object
   const { userId } = route.params; // รับ userId จาก props
 
+  // Load custom fonts using expo-font
   useEffect(() => {
     const loadFonts = async () => {
       await Font.loadAsync({
-        "Mitr-Regular": require("../assets/fonts/Mitr-Regular.ttf"),
-        "Mitr-Bold": require("../assets/fonts/Mitr-Bold.ttf"),
+        "Mitr-Regular": require('../assets/fonts/Mitr-Regular.ttf'),
+        "Mitr-Bold": require('../assets/fonts/Mitr-Bold.ttf'),
       });
       setFontsLoaded(true);
     };
@@ -43,7 +44,7 @@ const DashboardScreen = () => {
         const data = await response.json();
         setJobs(data);
 
-        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 6 งาน
+        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 3 งาน
         setRecommendedJobs(randomJobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -53,27 +54,32 @@ const DashboardScreen = () => {
     fetchJobs();
   }, []);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const response = await fetch(`http://10.0.2.2:3000/api/users/id/${userId}`);
-        const data = await response.json();
-        if (response.ok) {
-          setUserInfo(data);
-        } else {
-          console.error(data.error);
-        }
-      } catch (error) {
-        console.error('Error fetching user info:', error);
-      }
-    };
-
-    fetchUserInfo();
-  }, [userId]);
-
   if (!fontsLoaded) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <AppLoading />; // Show a loading screen while fonts are loading
   }
+
+  const handlePost = () => {
+    console.log('Job posted');
+    navigation.goBack();
+  };
+
+  const renderInputField = (label, value, setValue, isVisible, toggleVisible) => (
+    <View style={styles.inputContainer}>
+      <TouchableOpacity onPress={toggleVisible} style={styles.inputHeader}>
+        <Text style={styles.inputLabel}>{label}</Text>
+        <Icon name={isVisible ? 'remove' : 'add'} color="#FF6B6B" size={20} />
+      </TouchableOpacity>
+      {isVisible && (
+        <TextInput
+          style={styles.input}
+          value={value}
+          onChangeText={setValue}
+          placeholder={`ใส่${label.toLowerCase()}`}
+          placeholderTextColor="#A0A0A0"
+        />
+      )}
+    </View>
+  );
 
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -142,67 +148,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
-    padding: 20,
+  },
+  horizonbar: {
+    padding: 10,
+    marginLeft: 10,
+    marginRight: 10,
   },
   header: {
-    height: 180,
-    justifyContent: "center",
-    alignItems: "center",
-    fontFamily: "Mitr-Bold",
-    flexDirection: "row",
-    gap: 45,
-    marginBottom: -40,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: "#fff",
-    marginTop: 10,
-  },
-  headerSearch: {
-    padding: 20,
-  },
-  headerText: {
-    marginTop: 50,
-    marginLeft: 10,
-    fontSize: 24,
-    textAlign: "center",
-    marginBottom: 10,
-    fontFamily: "Mitr-Medium",
-    color: "white",
-  },
-  searchInput: {
-    backgroundColor: "white",
-    borderRadius: 25,
-    padding: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-    fontFamily: "Mitr-Regular",
-  },
-  sectionTitle: {
+  headerTitle: {
     fontSize: 18,
     marginBottom: 10,
     marginTop: 20,
     fontFamily: "Mitr-Medium",
   },
-  recommendations: {
+  form: {
     flex: 1,
+    padding: 16,
+    marginBottom: 100,
   },
-  jobCard: {
-    backgroundColor: "white",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: "#000",
+  inputContainer: {
+    marginBottom: 16,
+    backgroundColor: '#F9F9F9',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowRadius: 3,
   },
   horizontalJobCard: {
     backgroundColor: "white",
@@ -216,17 +196,22 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
-  jobTitle: {
+  inputLabel: {
     fontSize: 16,
-    fontFamily: "Mitr-Medium",
+    fontWeight: 'bold',
+    color: '#333',
+    fontFamily: 'Mitr-Bold', // Custom font applied
   },
-  jobLocation: {
-    color: "gray",
-    fontFamily: "Mitr-Regular",
-  },
-  jobSalary: {
-    color: "#4CAF50",
-    fontFamily: "Mitr-Medium",
+  input: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#FFF',
+    color: '#333',
+    fontFamily: 'Mitr-Regular', // Custom font applied
   },
 });
 
