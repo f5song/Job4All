@@ -7,7 +7,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import SearchScreen from './screens/SearchScreen';
-import NotificationScreen from './screens/NotificationScreen';
+import JobDetailScreen from './screens/JobDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,10 +42,9 @@ export default function App() {
           component={SearchScreen}
         />
         <Stack.Screen
-          name="Notification"
-          component={NotificationScreen}
+          name="JobDetail"
+          component={JobDetailScreen}
         />
-         
       </Stack.Navigator>
     </NavigationContainer>
     
