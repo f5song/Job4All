@@ -71,12 +71,12 @@ const AddAJobScreen = ({ navigation }) => {
       <View style={styles.body}>
         <Text style={styles.headerTitle}>เพิ่มงาน</Text>
         <ScrollView style={styles.form}>
-          {renderInputField('ตำแหน่งงาน ', jobPosition, setJobPosition, isJobPositionVisible, () => setJobPositionVisible(!isJobPositionVisible))}
+          {renderInputField('ตำแหน่งงาน', jobPosition, setJobPosition, isJobPositionVisible, () => setJobPositionVisible(!isJobPositionVisible),)}
           {renderInputField('รูปแบบการทำงาน', workplaceType, setWorkplaceType, isWorkplaceTypeVisible, () => setWorkplaceTypeVisible(!isWorkplaceTypeVisible))}
           {renderInputField('สถานที่ปฏิบัติงาน', jobLocation, setJobLocation, isJobLocationVisible, () => setJobLocationVisible(!isJobLocationVisible))}
           {renderInputField('บริษัท', company, setCompany, isCompanyVisible, () => setCompanyVisible(!isCompanyVisible))}
           {renderInputField('ประเภทการจ้างงาน', employmentType, setEmploymentType, isEmploymentTypeVisible, () => setEmploymentTypeVisible(!isEmploymentTypeVisible))}
-          {renderInputField('คำอธิบาย', description, setDescription, isDescriptionVisible, () => setDescriptionVisible(!isDescriptionVisible))}
+          {renderInputField('อธิบาย', description, setDescription, isDescriptionVisible, () => setDescriptionVisible(!isDescriptionVisible))}
         </ScrollView>
       </View>
       {/* Button at the bottom */}
