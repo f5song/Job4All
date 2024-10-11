@@ -11,13 +11,16 @@ import {
 } from "react-native";
 import * as Font from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
-import { useNavigation } from "@react-navigation/native"; // Import navigation
+import { useNavigation, useRoute } from "@react-navigation/native"; // Import navigation and route
 
 const DashboardScreen = () => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [jobs, setJobs] = useState([]); // State สำหรับเก็บข้อมูลงาน
   const [recommendedJobs, setRecommendedJobs] = useState([]); // สำหรับเก็บงานที่สุ่มแนะนำ
+  const [userInfo, setUserInfo] = useState({ firstName: '', lastName: '' }); // State สำหรับเก็บข้อมูลผู้ใช้
   const navigation = useNavigation(); // ใช้ navigation
+  const route = useRoute(); // Get route object
+  const { userId } = route.params; // รับ userId จาก props
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -38,7 +41,7 @@ const DashboardScreen = () => {
         const data = await response.json();
         setJobs(data);
 
-        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 3 งาน
+        const randomJobs = data.sort(() => 0.5 - Math.random()).slice(0, 6); // สุ่มเลือก 6 งาน
         setRecommendedJobs(randomJobs);
       } catch (error) {
         console.error("Error fetching jobs:", error);
@@ -48,6 +51,24 @@ const DashboardScreen = () => {
     fetchJobs();
   }, []);
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch(`http://10.0.2.2:3000/api/users/id/${userId}`);
+        const data = await response.json();
+        if (response.ok) {
+          setUserInfo(data);
+        } else {
+          console.error(data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching user info:', error);
+      }
+    };
+
+    fetchUserInfo();
+  }, [userId]);
+
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -55,7 +76,9 @@ const DashboardScreen = () => {
   return (
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <LinearGradient colors={["#BDFAC7", "#72D282"]} style={styles.header}>
-        <Text style={styles.headerText}>สุขสบาย สำนึกใจ</Text>
+        <Text style={styles.headerText}>
+          {userInfo.firstName} {userInfo.lastName}
+        </Text>
         <Image
           source={require("../assets/profile.png")}
           style={styles.profileImage}
@@ -111,6 +134,7 @@ const DashboardScreen = () => {
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

@@ -47,6 +47,9 @@ const RegisterScreen = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState(''); 
     const [showPassword, setShowPassword] = useState(false);
+    const [firstName, setFirstName] = useState(''); 
+    const [lastName, setLastName] = useState(''); 
+    const [companyName, setCompanyName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [fontsLoaded, setFontsLoaded] = useState(false);
 
@@ -64,33 +67,41 @@ const RegisterScreen = ({ navigation }) => {
     }, []);
 
     const handleRegister = async () => {
-        // ตรวจสอบว่าข้อมูลทั้งหมดถูกกรอกหรือไม่
+        // ตรวจสอบข้อมูลที่กรอก
         if (!username || !email || !password || !confirmPassword) {
             setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
             return;
         }
-    
-        // ตรวจสอบรูปแบบของอีเมล
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // รูปแบบอีเมล
+
+        if (userType === 'ผู้หางาน' && (!firstName || !lastName)) {
+            setErrorMessage('โปรดกรอกชื่อจริง นามสกุล');
+            return;
+        }
+
+        if (userType === 'บริษัท' && !companyName) {
+            setErrorMessage('โปรดกรอกชื่อบริษัท');
+            return;
+        }
+
+        // ตรวจสอบรูปแบบอีเมล
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('โปรดกรอกอีเมลในรูปแบบที่ถูกต้อง');
             return;
         }
-    
-        // ตรวจสอบความยาวของรหัสผ่าน
-        if (password.length < 6) { // กำหนดความยาวขั้นต่ำของรหัสผ่าน
+
+        if (password.length < 6) {
             setErrorMessage('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');
             return;
         }
-    
-        // ตรวจสอบว่ารหัสผ่านตรงกันหรือไม่
+
         if (password !== confirmPassword) {
             setErrorMessage('รหัสผ่านไม่ตรงกัน');
             return;
         }
-    
+
         setErrorMessage('');
-    
+
         try {
             const response = await fetch('http://10.0.2.2:3000/api/register', {
                 method: 'POST',
@@ -101,14 +112,17 @@ const RegisterScreen = ({ navigation }) => {
                     username,
                     email,
                     password,
-                    userType, 
+                    userType,
+                    firstName: userType === 'ผู้หางาน' ? firstName : null,
+                    lastName: userType === 'ผู้หางาน' ? lastName : null,
+                    companyName: userType === 'บริษัท' ? companyName : null,
                 }),
             });
-    
+
             const data = await response.json(); 
-    
+
             if (response.ok) {
-                navigation.navigate('Login', { userType }); 
+                navigation.navigate('Login', { userType });
             } else {
                 setErrorMessage(data.error);
             }
@@ -116,21 +130,18 @@ const RegisterScreen = ({ navigation }) => {
             setErrorMessage('เกิดข้อผิดพลาดระหว่างการลงทะเบียน');
         }
     };
-    
 
     return (
         <View style={styles.container}>
-            <Text style={styles.subtitle}>สร้างบัญชีสำหรับ{userType}</Text>
+            <Text style={styles.subtitle}>สร้างบัญชีสำหรับ {userType}</Text>
             <Text style={styles.description}>โปรดกรอกรายละเอียดด้านล่าง</Text>
 
-            {/* Username Input */}
             <InputField
                 placeholder="ชื่อผู้ใช้"
                 value={username}
                 onChangeText={setUsername}
             />
 
-            {/* Email Input */}
             <InputField
                 placeholder="อีเมล"
                 value={email}
@@ -138,7 +149,6 @@ const RegisterScreen = ({ navigation }) => {
                 keyboardType="email-address"
             />
 
-            {/* Password Input with eye icon */}
             <InputField
                 placeholder="รหัสผ่าน"
                 value={password}
@@ -148,7 +158,6 @@ const RegisterScreen = ({ navigation }) => {
                 setShowPassword={setShowPassword}
             />
 
-            {/* Confirm Password Input with eye icon */}
             <InputField
                 placeholder="ยืนยันรหัสผ่าน"
                 value={confirmPassword}
@@ -158,9 +167,32 @@ const RegisterScreen = ({ navigation }) => {
                 setShowPassword={setShowPassword}
             />
 
+            {userType === 'ผู้หางาน' && (
+                <>
+                    <InputField
+                        placeholder="ชื่อจริง"
+                        value={firstName}
+                        onChangeText={setFirstName}
+                    />
+
+                    <InputField
+                        placeholder="นามสกุล"
+                        value={lastName}
+                        onChangeText={setLastName}
+                    />
+                </>
+            )}
+
+            {userType === 'บริษัท' && (
+                <InputField
+                    placeholder="ชื่อบริษัท"
+                    value={companyName}
+                    onChangeText={setCompanyName}
+                />
+            )}
+
             {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
-            {/* Register Button */}
             <TouchableOpacity style={styles.button} onPress={handleRegister}>
                 <Text style={styles.buttonText}>ลงทะเบียน</Text>
             </TouchableOpacity>
@@ -203,73 +235,53 @@ const styles = StyleSheet.create({
         fontFamily: 'Mitr-Regular',
     },
     eyeIcon: {
-        paddingHorizontal: 10, 
-        justifyContent: 'center',
+        padding: 10,
     },
     button: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#007BFF',
         borderRadius: 25,
-        padding: 15,
+        paddingVertical: 15,
         alignItems: 'center',
-        marginTop: 10,
+        marginVertical: 20,
     },
     buttonText: {
         color: 'white',
-        fontSize: 18,
-        fontFamily: 'Mitr-Medium',
-    },
-    errorText: {
-        color: '#FF4C4C',
-        backgroundColor: '#FFEDED',
-        textAlign: 'center',
-        marginBottom: 15,
         fontSize: 16,
-        borderRadius: 8,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderWidth: 1,
-        borderColor: '#FF4C4C',
-        fontFamily: 'Mitr-Regular',
+        fontFamily: 'Mitr-Bold',
     },
     subtitle: {
         fontSize: 20,
-        fontFamily: 'Mitr-Medium',
+        fontFamily: 'Mitr-Bold',
+        marginBottom: 10,
     },
     description: {
         fontSize: 14,
-        color: 'gray',
-        marginBottom: 30,
+        fontFamily: 'Mitr-Regular',
+        marginBottom: 20,
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 15,
         fontFamily: 'Mitr-Regular',
     },
     loginText: {
-        fontSize: 14,
-        color: 'black',
         textAlign: 'center',
-        marginTop: 40,
         fontFamily: 'Mitr-Regular',
-    },
-    loginButtonText: {
-        color: '#4DB15E',
-        fontSize: 16,
-        fontFamily: 'Mitr-Regular',
+        marginTop: 15,
     },
     line: {
-        width: '100%',
-        height: 5,
-        backgroundColor: '#F5F5F5',
-        marginVertical: 20,
-        shadowColor: 'rgba(0, 0, 0, 0.5)',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 5,
+        height: 1,
+        backgroundColor: 'lightgray',
+        marginVertical: 10,
     },
     loginButton: {
-        backgroundColor: '#D9FFDF',
-        borderRadius: 25,
-        padding: 15,
         alignItems: 'center',
-        marginTop: 1,
+        marginVertical: 10,
+    },
+    loginButtonText: {
+        fontSize: 16,
+        color: '#007BFF',
+        fontFamily: 'Mitr-Bold',
     },
 });
 
