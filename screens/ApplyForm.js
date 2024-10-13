@@ -1,16 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar, Image, ScrollView } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native';
-import axios from 'axios'; // Ensure you have axios imported
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  StatusBar,
+  Image,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
+import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function JobApplicationScreen() {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [job, setJob] = useState(null);
+  const [userId, setUserId] = useState(null);
   const route = useRoute();
-  const { jobId } = route.params; // รับ jobId จาก params
+  const { jobId } = route.params;
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -26,30 +39,54 @@ export default function JobApplicationScreen() {
       }
     };
 
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem("userId");
+        setUserId(id);
+      } catch (error) {
+        console.error("Error fetching userId:", error);
+      }
+    };
+
     if (jobId) {
       fetchJob();
     }
+    fetchUserId();
   }, [jobId]);
 
   const handleUploadResume = () => {
-    console.log('Upload resume');
+    console.log("Upload resume");
   };
 
   const handleSubmit = async () => {
+    if (!userId) {
+      Alert.alert("Error", "User ID is not available.");
+      return;
+    }
+
+    const appliedAt = new Date().toISOString();
+
     try {
       const response = await axios.post(
-        "http://10.0.2.2:3000/api/applications",
+        "http://10.0.2.2:3000/api/applications", // URL ต้องตรงกับ endpoint ที่ตั้งไว้ใน server.js
         {
-          jobId,
+          user_id: userId,
+          job_id: jobId,
+          status: "pending",
+          applied_at: appliedAt,
           firstName,
           lastName,
           phone,
         }
       );
       console.log("Form submitted", response.data);
-      // แสดงข้อความสำเร็จหรือล้างฟอร์มหลังจากส่งข้อมูล
+      Alert.alert("สำเร็จ", "สมัครงานสำเร็จแล้ว!");
     } catch (error) {
       console.error("Error submitting form:", error);
+      Alert.alert(
+        "เกิดข้อผิดพลาด",
+        "ไม่สามารถสมัครงานได้: " + error.response.data.message
+      );
     }
   };
 
@@ -74,7 +111,9 @@ export default function JobApplicationScreen() {
         </View>
         <View style={styles.iconContainer}>
           <Image
-            source={{ uri: job.company_logo || "https://via.placeholder.com/60" }} // ใช้ URL ที่ถูกต้องสำหรับภาพ
+            source={{
+              uri: job.company_logo || "https://via.placeholder.com/60",
+            }}
             style={styles.icon}
           />
         </View>
@@ -141,8 +180,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     fontSize: 18,
@@ -166,6 +205,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     fontWeight: "600",
     top: 20,
+    fontFamily: "Mitr-Regular",
   },
   jobTitleContainer: {
     marginRight: 60,
@@ -174,7 +214,7 @@ const styles = StyleSheet.create({
   jobTitle: {
     color: "white",
     fontSize: 26,
-    fontWeight: "bold",
+    fontFamily: "Mitr-Medium",
   },
   iconContainer: {
     position: "absolute",
@@ -218,7 +258,7 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Mitr-Medium",
     color: "#333",
   },
   uploadButton: {
@@ -238,33 +278,34 @@ const styles = StyleSheet.create({
     color: "#4CAF50",
     marginLeft: 10,
     fontWeight: "600",
+    fontFamily: "Mitr-Regular",
   },
   inputContainer: {
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,
-    marginBottom: 5,
+    fontFamily: "Mitr-Regular",
     color: "#333",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#BDBDBD",
+    borderColor: "#ccc",
     borderRadius: 10,
-    padding: 12,
+    padding: 10,
     fontSize: 16,
-    backgroundColor: "#F9F9F9",
+    color: "#333",
   },
   submitButton: {
     backgroundColor: "#4CAF50",
     borderRadius: 10,
-    padding: 15,
+    paddingVertical: 15,
     alignItems: "center",
-    elevation: 3,
   },
   submitButtonText: {
     color: "white",
-    fontSize: 18,
     fontWeight: "bold",
+    fontSize: 18,
+    fontFamily: "Mitr-Medium",
   },
 });

@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const express = require('express');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const cors = require('cors'); // นำเข้า cors ที่นี่
+const bodyParser = require('body-parser'); // เพิ่มการนำเข้า body-parser
 const app = express();
 
 // เชื่อมต่อ MongoDB
@@ -42,8 +44,10 @@ const jobListingSchema = new mongoose.Schema({
 
 const JobListing = mongoose.model('JobListing', jobListingSchema);
 
-// Middleware สำหรับการ parse JSON
+// Middleware สำหรับการ parse JSON และใช้งาน CORS
+app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json()); // เพิ่มบรรทัดนี้เพื่อใช้ body-parser
 
 // Route สำหรับดึงข้อมูลผู้ใช้ทั้งหมด
 app.get('/data', async (req, res) => {
@@ -58,7 +62,6 @@ app.get('/data', async (req, res) => {
 // Route สำหรับดึงข้อมูลผู้ใช้ตาม ID
 app.get('/api/users/id/:id', async (req, res) => {
   try {
-    // ตรวจสอบว่ามีการส่ง ID มาในรูปแบบที่ถูกต้องหรือไม่
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'ID ที่ส่งมาไม่ถูกต้อง' });
     }
@@ -70,33 +73,31 @@ app.get('/api/users/id/:id', async (req, res) => {
 
     res.json({ firstName: user.firstName, lastName: user.lastName });
   } catch (error) {
-    console.error('Error fetching user:', error.message); // แสดงข้อความข้อผิดพลาดที่ละเอียดขึ้น
-    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้', details: error.message }); // ส่งรายละเอียดข้อผิดพลาดกลับไป
+    console.error('Error fetching user:', error.message);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้', details: error.message });
   }
 });
 
-
+// Middleware สำหรับการตรวจสอบ JWT
 const authenticateJWT = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1]; // แยก token ออกจาก "Bearer token"
-  
+    const token = req.headers['authorization']?.split(' ')[1];
+
     if (token) {
       jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
         if (err) {
           return res.sendStatus(403);
         }
-        req.user = user; // เก็บข้อมูลผู้ใช้ใน req.user
+        req.user = user;
         next();
       });
     } else {
       res.sendStatus(401);
     }
-  };  
+};  
 
 app.get('/api/protected', authenticateJWT, (req, res) => {
     res.send('คุณได้เข้าถึงข้อมูลที่ต้องการการยืนยันตัวตน');
-  });
-  
-
+});
 
 // Route สำหรับค้นหางานพร้อมฟิลเตอร์
 app.get('/api/jobs', async (req, res) => {
@@ -126,9 +127,9 @@ app.get('/api/jobs', async (req, res) => {
   }
 });
 
+// Route สำหรับดึงข้อมูลงานตาม ID
 app.get('/api/jobs/:id', async (req, res) => {
   try {
-    console.log('Fetching job with ID:', req.params.id);
     const job = await JobListing.findById(req.params.id);
     if (!job) {
       return res.status(404).json({ error: 'ไม่พบงานที่ต้องการ' });
@@ -144,19 +145,16 @@ app.get('/api/jobs/:id', async (req, res) => {
 app.post('/api/register', async (req, res) => {
   const { username, email, password, userType, firstName, lastName, companyName } = req.body;
 
-  // ตรวจสอบว่าใส่ข้อมูลครบถ้วนตามประเภทผู้ใช้
   if (!username || !email || !password || !userType) {
     return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
   }
 
-  // ตรวจสอบรูปแบบอีเมล
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: 'รูปแบบอีเมลไม่ถูกต้อง' });
   }
 
   try {
-    // ตรวจสอบความซ้ำซ้อนของผู้ใช้
     const existingUserByEmail = await User.findOne({ email });
     if (existingUserByEmail) {
       return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' });
@@ -167,7 +165,6 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'ชื่อผู้ใช้นี้มีอยู่แล้ว' });
     }
 
-    // ตรวจสอบข้อมูลตาม userType
     if (userType === 'ผู้หางาน') {
       if (!firstName || !lastName) {
         return res.status(400).json({ error: 'โปรดกรอกชื่อจริงและนามสกุล' });
@@ -180,7 +177,6 @@ app.post('/api/register', async (req, res) => {
       return res.status(400).json({ error: 'ประเภทผู้ใช้ไม่ถูกต้อง' });
     }
 
-    // เข้ารหัสรหัสผ่าน
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       username,
@@ -200,38 +196,78 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Route สำหรับเข้าสู่ระบบ
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
-  
-    if (!username || !password) {
-      return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
-    }
-  
-    try {
-      const user = await User.findOne({ username });
-      if (!user) {
-        return res.status(400).json({ error: 'ไม่พบผู้ใช้' });
-      }
-  
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
-      }
-  
-      // สร้าง token
-      const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
-  
-      // ส่ง token กลับไปยัง frontend
-      res.status(200).json({ message: 'เข้าสู่ระบบสำเร็จ', token });
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ โปรดลองใหม่อีกครั้ง.' });
-    }
-  });
-  
 
-// เปิดใช้งาน server
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+    if (!username || !password) {
+        return res.status(400).json({ error: 'โปรดกรอกข้อมูลให้ครบถ้วน' });
+    }
+
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(400).json({ error: 'ไม่พบผู้ใช้' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ error: 'รหัสผ่านไม่ถูกต้อง' });
+        }
+
+        const token = jwt.sign({ id: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // ส่ง userId กลับไปใน response
+        console.log("User ID:", user._id); // เพิ่มคำสั่งนี้เพื่อดูค่า userId
+        res.status(200).json({ 
+            message: 'เข้าสู่ระบบสำเร็จ', 
+            token, 
+            userId: user._id // เพิ่ม userId ที่นี่
+        });
+    } catch (error) {
+        console.error('Error during login:', error);
+        res.status(500).json({ error: 'เกิดข้อผิดพลาดขณะเข้าสู่ระบบ โปรดลองใหม่อีกครั้ง.' });
+    }
+});
+
+// Schema สำหรับการสมัครงาน
+const ApplicationSchema = new mongoose.Schema({
+    user_id: { type: String, required: true },
+    job_id: { type: String, required: true },
+    status: { type: String, default: 'pending' },
+    applied_at: { type: Date, default: Date.now },
+}, { collection: 'applications' });
+
+const Application = mongoose.model('Application', ApplicationSchema);
+
+// Route สำหรับการสมัครงาน
+app.post('/api/applications', async (req, res) => {
+    const { user_id, job_id, status, applied_at, firstName, lastName, phone } = req.body;
+
+    if (!user_id || !job_id || !status || !applied_at || !firstName || !lastName || !phone) {
+        return res.status(400).json({ message: "ข้อมูลไม่ครบถ้วน" });
+    }
+
+    try {
+        const application = new Application({
+            user_id,
+            job_id,
+            status,
+            applied_at,
+            firstName,
+            lastName,
+            phone,
+        });
+
+        await application.save();
+        res.status(201).json({ message: "สมัครงานสำเร็จ", application });
+    } catch (error) {
+        console.error("Error saving application:", error);
+        res.status(500).json({ message: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
+    }
+});
+
+// ฟังค์ชั่นเริ่มต้นเซิร์ฟเวอร์
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -11,8 +11,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Font from "expo-font";
-import { useRoute } from "@react-navigation/native"; // ใช้ useRoute เพื่อรับพารามิเตอร์
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import { useRoute } from "@react-navigation/native"; 
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
 
 const InputField = ({
   placeholder,
@@ -25,7 +25,7 @@ const InputField = ({
   <View style={styles.inputContainer}>
     <TextInput
       style={styles.input}
-      placeholder={placeholder} // แก้ไข placeholder
+      placeholder={placeholder}
       value={value}
       onChangeText={onChangeText}
       secureTextEntry={secureTextEntry}
@@ -75,36 +75,45 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     setErrorMessage("");
     try {
-      const response = await fetch("http://10.0.2.2:3000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-          password: password,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (data.userId && data.token) {
-          await AsyncStorage.setItem("userId", data.userId);
-          await AsyncStorage.setItem("token", data.token);
+        const response = await fetch("http://10.0.2.2:3000/api/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+            console.log("Data from server:", data); // ดูข้อมูลที่ได้รับจากเซิร์ฟเวอร์
+            if (data.userId) {  // ตรวจสอบว่ามีค่า userId หรือไม่
+                await AsyncStorage.setItem("userId", data.userId.toString()); // แปลงให้เป็น string
+            } else {
+                console.warn("userId is undefined");
+            }
+            await AsyncStorage.setItem("token", data.token);
+  
+            Alert.alert("เข้าสู่ระบบสำเร็จ", "คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!");
+            navigation.navigate("Dashboard", { userId: data.userId });
+        } else {
+            const message = data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+            setErrorMessage(message);
+            Alert.alert("เข้าสู่ระบบล้มเหลว", message);
         }
-
-        Alert.alert("เข้าสู่ระบบสำเร็จ", "คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!");
-        navigation.navigate("Dashboard", { userId: data.userId });
-      } else {
-        setErrorMessage(data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
-        Alert.alert("เข้าสู่ระบบล้มเหลว", errorMessage); // แสดง Alert เมื่อเข้าสู่ระบบล้มเหลว
-      }
     } catch (error) {
-      setErrorMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
-      Alert.alert("เกิดข้อผิดพลาด", errorMessage); // แสดง Alert เมื่อเกิดข้อผิดพลาด
+        console.error("Error saving user ID:", error);
+        setErrorMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        Alert.alert("เกิดข้อผิดพลาด", "โปรดลองใหม่อีกครั้ง");
     } finally {
-      setLoading(false);
+        setLoading(false);
+    }
+};
+  
+
+  const renderErrorMessage = () => {
+    if (errorMessage !== "") {
+      return <Text style={styles.errorText}>{errorMessage}</Text>;
     }
   };
 
@@ -134,9 +143,7 @@ const LoginScreen = ({ navigation }) => {
         setShowPassword={setShowPassword}
       />
 
-      {errorMessage !== "" && (
-        <Text style={styles.errorText}>{errorMessage}</Text>
-      )}
+      {renderErrorMessage()}
 
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>เข้าสู่ระบบ</Text>
@@ -173,7 +180,6 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-// Your styles here
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -219,14 +225,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     fontSize: 16,
-  },
-  placeholder: {
-    position: "absolute",
-    left: 20,
-    top: 15, // Adjust position to align with TextInput
-    fontSize: 16,
-    color: "#B0B0B0",
-    fontFamily: "Mitr-Regular",
   },
   eyeIcon: {
     padding: 10,
@@ -283,25 +281,26 @@ const styles = StyleSheet.create({
   forgetpasswordText: {
     textAlign: "center",
     color: "gray",
-    fontFamily: "Mitr-Regular",
+    fontFamily: "Mitr-Medium",
   },
   line: {
     borderBottomColor: "gray",
     borderBottomWidth: 1,
-    marginVertical: 20,
+    marginVertical: 10,
   },
   createAccountButton: {
-    marginTop: 10,
+    marginTop: 15,
+    alignItems: "center",
   },
   createAccountText: {
-    textAlign: "center",
-    color: "#4CAF50",
+    color: "blue",
     fontFamily: "Mitr-Medium",
   },
   errorText: {
     color: "red",
     textAlign: "center",
-    marginVertical: 10,
+    marginBottom: 10,
+    fontFamily: "Mitr-Medium",
   },
 });
 
