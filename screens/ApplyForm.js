@@ -8,13 +8,13 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
-  ScrollView,
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as DocumentPicker from "expo-document-picker";
 
 export default function JobApplicationScreen() {
   const [firstName, setFirstName] = useState("");
@@ -22,6 +22,8 @@ export default function JobApplicationScreen() {
   const [phone, setPhone] = useState("");
   const [job, setJob] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const route = useRoute();
   const { jobId } = route.params;
 
@@ -54,8 +56,24 @@ export default function JobApplicationScreen() {
     fetchUserId();
   }, [jobId]);
 
-  const handleUploadResume = () => {
-    console.log("Upload resume");
+  const handleUploadResume = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf", // จำกัดให้เลือกเฉพาะ PDF
+      });
+
+      console.log("Document Picker response: ", res);
+
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        console.log("Selected file: ", res.assets[0]);
+        setSelectedFile(res.assets[0]); // เก็บไฟล์ที่เลือก
+      } else {
+        console.log("User cancelled the picker");
+      }
+    } catch (err) {
+      console.error("Error picking document: ", err);
+      Alert.alert("Error", "เกิดข้อผิดพลาดในการเลือกไฟล์: " + err.message);
+    }
   };
 
   const handleSubmit = async () => {
@@ -63,20 +81,37 @@ export default function JobApplicationScreen() {
       Alert.alert("Error", "User ID is not available.");
       return;
     }
-
+  
+    if (!selectedFile) {
+      Alert.alert("Error", "กรุณาเลือกไฟล์เรซูเม่ก่อน");
+      return;
+    }
+  
     const appliedAt = new Date().toISOString();
-
+    const formData = new FormData();
+    formData.append("user_id", userId);
+    formData.append("job_id", jobId);
+    formData.append("status", "pending");
+    formData.append("applied_at", appliedAt);
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    formData.append("phone", phone);
+  
+    // เพิ่มไฟล์เรซูเม่ในรูปแบบ FormData
+    formData.append("resume", {
+      uri: selectedFile.uri,
+      type: selectedFile.mimeType || "application/pdf",
+      name: selectedFile.name || "resume.pdf",
+    });
+  
     try {
       const response = await axios.post(
-        "http://10.0.2.2:3000/api/applications", // URL ต้องตรงกับ endpoint ที่ตั้งไว้ใน server.js
+        "http://10.0.2.2:3000/api/applications",
+        formData,
         {
-          user_id: userId,
-          job_id: jobId,
-          status: "pending",
-          applied_at: appliedAt,
-          firstName,
-          lastName,
-          phone,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
       console.log("Form submitted", response.data);
@@ -85,34 +120,44 @@ export default function JobApplicationScreen() {
       console.error("Error submitting form:", error);
       Alert.alert(
         "เกิดข้อผิดพลาด",
-        "ไม่สามารถสมัครงานได้: " + error.response.data.message
+        "ไม่สามารถสมัครงานได้: " +
+          (error.response?.data?.message || "Unknown error")
       );
     }
   };
 
-  if (!job) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="light-content" backgroundColor="#4CAF50" />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>กำลังโหลด...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  const appliedAt = new Date().toISOString();
+  console.log({
+    user_id: userId, 
+    job_id: jobId,
+    status: "pending", 
+    applied_at: appliedAt,
+    firstName: firstName, 
+    lastName: lastName, 
+    phone: phone,
+    resume: selectedFile,
+
+  });
+
+  useEffect(() => {
+    console.log("Current selected file:", selectedFile);
+  }, [selectedFile]);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#4CAF50" />
       <View style={styles.header}>
-        <Text style={styles.companyName}>{job.company_name || "N/A"}</Text>
+        <Text style={styles.companyName}>{job ? job.company_name : "N/A"}</Text>
         <View style={styles.jobTitleContainer}>
-          <Text style={styles.jobTitle}>{job.job_title || "N/A"}</Text>
+          <Text style={styles.jobTitle}>{job ? job.job_title : "N/A"}</Text>
         </View>
         <View style={styles.iconContainer}>
           <Image
             source={{
-              uri: job.company_logo || "https://via.placeholder.com/60",
+              uri:
+                job && job.company_logo
+                  ? job.company_logo
+                  : "https://via.placeholder.com/60",
             }}
             style={styles.icon}
           />
@@ -133,7 +178,11 @@ export default function JobApplicationScreen() {
           onPress={handleUploadResume}
         >
           <Ionicons name="add-circle-outline" size={24} color="#4CAF50" />
-          <Text style={styles.uploadButtonText}>อัพโหลดเรซูเม่</Text>
+          <Text style={styles.uploadButtonText}>
+            {selectedFile && selectedFile.name
+              ? selectedFile.name
+              : "อัพโหลดเรซูเม่"}
+          </Text>
         </TouchableOpacity>
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>ชื่อ</Text>
