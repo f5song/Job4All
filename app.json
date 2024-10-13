@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Job4All",
-    "slug": "Job4All",
+    "name": "job4all",
+    "slug": "job4all",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,10 +18,30 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.f5song.job4all"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Mitr-Regular.ttf",
+            "./assets/fonts/Mitr-Bold.ttf",
+            "./assets/fonts/Mitr-Medium.ttf",
+            "./assets/fonts/Mitr-SemiBold.ttf",
+            "./assets/fonts/RacingSansOne-Regular.ttf"
+          ]
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e1131832-90d4-432a-9501-9ed333844645"
+      }
     }
   }
 }
