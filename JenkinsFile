@@ -1,16 +1,13 @@
 pipeline {
     agent any
-
     environment {
-        // Define variables
-        DOCKER_IMAGE       = 'f5song/job4all-app:latest' // เปลี่ยนชื่อ Docker image ให้เป็นของคุณ
+        DOCKER_IMAGE       = 'f5song/job4all-app:latest' 
         DOCKER_CREDENTIALS = credentials('dockerhub')
     }
 
     stages {
         stage('Start Jenkins') {
             steps {
-                // Print starting message
                 sh 'echo Start Jenkins for Job4All Application............'
                 sh 'echo docker : user = $DOCKER_CREDENTIALS_USR : password = $DOCKER_CREDENTIALS_PSW'
             }
@@ -18,8 +15,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // Build the Docker image
-                dir('./path/to/your/project') { // เปลี่ยนเป็น path ที่ถูกต้องสำหรับ project ของคุณ
+                dir('./') { 
                     sh 'echo "Running in $(pwd)"'
                     sh 'echo start building the Docker image = $DOCKER_IMAGE'
                     sh 'docker build -t $DOCKER_IMAGE .'
@@ -30,9 +26,7 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Login to Docker Hub
                     sh 'echo $DOCKER_CREDENTIALS_PSW | docker login --username $DOCKER_CREDENTIALS_USR --password-stdin'
-                    // Push the image
                     sh 'docker push $DOCKER_IMAGE'
                 }
             }
@@ -41,7 +35,6 @@ pipeline {
         stage('Clear Docker Components') {
             steps {
                 script {
-                    // Remove Docker images and containers
                     sh 'docker stop $(docker ps -a -q) || true'  
                     sh 'docker rm $(docker ps -a -q) || true' 
                     sh 'docker rmi $(docker images -q) || true'
@@ -53,10 +46,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Pull the Docker image from Docker Hub
                     sh 'docker pull $DOCKER_IMAGE'
-                    // Run the Docker container
-                    sh 'docker run -d --name job4all-app -p 8085:80 $DOCKER_IMAGE' // เปลี่ยนชื่อ container ให้เหมาะสม
+                    sh 'docker run -d --name job4all-app -p 8085:80 $DOCKER_IMAGE'
                 }
             }
         }
@@ -64,7 +55,6 @@ pipeline {
 
     post {
         always {
-            // Logout from Docker Hub
             sh 'docker logout'
         }
     }
