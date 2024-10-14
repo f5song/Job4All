@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.f5song.job4all"
+      "package": "com.pisol00.job4all"
     },
     "web": {
       "favicon": "./assets/favicon.png"
