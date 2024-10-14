@@ -25,7 +25,7 @@ mongoose
     firstName: { type: String },
     lastName: { type: String },
     companyName: { type: String },
-    disabilityType: { type: String }, // Ensure this field exists
+    disabilityType: { type: String }, 
   });
 
 const User = mongoose.model("User", userSchema);
