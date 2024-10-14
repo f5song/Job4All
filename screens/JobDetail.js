@@ -53,12 +53,6 @@ export default function JobDetailScreen() {
             <Text style={styles.companyName}>{job.company_name || "N/A"}</Text>
             <Text style={styles.jobPosition}>{job.job_title || "N/A"}</Text>
           </View>
-          <Image
-            source={{
-              uri: job.company_logo || "https://via.placeholder.com/50",
-            }}
-            style={styles.logo}
-          />
         </View>
 
         {/* เส้นกั้น */}

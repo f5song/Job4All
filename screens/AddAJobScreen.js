@@ -51,12 +51,12 @@ const AddAJobScreen = ({ navigation }) => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json(); // อ่านข้อมูลเพิ่มเติมจาก response
+        const errorData = await response.json();
         throw new Error(`Failed to add job: ${errorData.message || response.statusText}`);
-    }
+      }
 
       console.log('Job added successfully');
-      navigation.goBack(); // กลับไปหน้าก่อนหน้าเมื่อเพิ่มงานเสร็จ
+      navigation.goBack(); // Navigate back after adding the job
     } catch (error) {
       console.error('Error adding job:', error);
     }
@@ -66,7 +66,7 @@ const AddAJobScreen = ({ navigation }) => {
     <View style={styles.inputContainer}>
       <TouchableOpacity onPress={toggleVisible} style={styles.inputHeader}>
         <Text style={styles.inputLabel}>{label}</Text>
-        <Icon name={isVisible ? "remove" : "add"} color="#FF6B6B" size={20} />
+        <Icon name={isVisible ? "remove" : "add"} color="#4CAF50" size={20} />
       </TouchableOpacity>
       {isVisible && (
         <TextInput
@@ -84,7 +84,7 @@ const AddAJobScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Icon name="close" color="#FF6B6B" size={24} />
+          <Icon name="close" color="#4CAF50" size={24} />
         </TouchableOpacity>
       </View>
       <View style={styles.body}>
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 18,
-    color: "#FF6B6B",
+    color: "#4CAF50", // Changed to green
     margin: 10,
-    fontFamily: "Mitr-Bold", // Custom font applied
+    fontFamily: "Mitr-Medium", // Custom font applied
   },
   body: {
     flex: 1,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     color: "#333",
-    fontFamily: "Mitr-Bold", // Custom font applied
+    fontFamily: "Mitr-Medium", // Custom font applied
   },
   input: {
     marginTop: 10,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   postButton: {
-    backgroundColor: "#FF6B6B",
+    backgroundColor: "#4CAF50", // Changed button color to green
     borderRadius: 25,
     paddingVertical: 12,
     paddingHorizontal: 50,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   postButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
-    fontFamily: "Mitr-Bold", // Custom font applied
+    fontFamily: "Mitr-Medium", // Custom font applied
   },
 });
 
