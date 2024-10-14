@@ -167,23 +167,6 @@ const LoginScreen = () => {
         <Text style={styles.forgetpasswordText}>ลืมรหัสผ่าน?</Text>
       </TouchableOpacity>
 
-      <Text style={styles.orText}>Or sign in with</Text>
-
-      <View style={styles.socialButtons}>
-        <TouchableOpacity style={styles.socialButton}>
-          <Image
-            source={require("../assets/iconGoogle.png")}
-            style={styles.socialIcon}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialButton}>
-          <Image
-            source={require("../assets/iconFacebook.png")}
-            style={styles.socialIcon}
-          />
-        </TouchableOpacity>
-      </View>
-
       <View style={styles.line} />
       <TouchableOpacity
         style={styles.createAccountButton}
@@ -199,25 +182,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F5F5F5",
-    padding: 20,
+    padding: 25,
   },
+
   title: {
     fontSize: 20,
     textAlign: "center",
-    marginTop: 60,
+    marginTop: 80,
     marginBottom: 10,
     fontFamily: "Mitr-Medium",
   },
   subtitle: {
     fontSize: 20,
-    marginBottom: 5,
+    marginTop: 20,
+    marginBottom: 10,
     fontFamily: "Mitr-Medium",
   },
   description: {
     fontSize: 14,
     color: "gray",
     textAlign: "flex-start",
-    marginBottom: 30,
+    marginBottom: 100,
     fontFamily: "Mitr-Medium",
   },
   inputContainer: {
@@ -240,6 +225,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     fontSize: 16,
+    fontFamily: "Mitr-Regular",
   },
   eyeIcon: {
     padding: 10,
@@ -257,59 +243,32 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Mitr-Medium",
   },
-  orText: {
-    textAlign: "center",
-    marginTop: 20,
-    marginBottom: 20,
-    color: "black",
-    fontFamily: "Mitr-Medium",
-  },
-  socialButtons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  socialButton: {
-    width: 150,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: "white",
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  socialIcon: {
-    width: 25,
-    height: 25,
-  },
   forgetpasswordButton: {
     marginTop: 10,
   },
   forgetpasswordText: {
-    textAlign: "center",
+    textAlign: "right",
+    marginRight: 15,
+    marginBottom: 190,
     color: "gray",
     fontFamily: "Mitr-Medium",
   },
   line: {
-    borderBottomColor: "gray",
+    borderBottomColor: "green",
     borderBottomWidth: 1,
     marginVertical: 10,
   },
   createAccountButton: {
-    marginTop: 15,
-    alignItems: "center",
+    backgroundColor: '#D9FFDF',
+    borderRadius: 25,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 20,
   },
   createAccountText: {
-    color: "blue",
-    fontFamily: "Mitr-Medium",
+    color: '#4DB15E',
+    fontSize: 16,
+    fontFamily: 'Mitr-Medium',
   },
   errorText: {
     color: "red",
