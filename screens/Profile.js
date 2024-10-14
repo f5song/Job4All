@@ -12,41 +12,41 @@ const AccountScreen = () => {
         const response = await fetch('http://10.0.2.2:3000/data');
         const data = await response.json();
         console.log('data1000: ', data);
-        setUserData(data.users[0]); 
+        setUserData(data.users[0]);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   return (
     <View style={styles.container}>
-     
+
       <LinearGradient
-        colors={['#5de76e', '#dcffe1']} 
+        colors={['#5de76e', '#dcffe1']}
         style={styles.header}
       >
         <Image
-          source={require('../assets/profile.png')} 
+          source={require('../assets/profile.png')}
           style={styles.profileImage}
         />
       </LinearGradient>
 
-     
+
       <View style={styles.profileInfo}>
-        {userData ? ( 
+        {userData ? (
           <>
             <Text style={styles.nameText}>{userData.name}</Text>
             <Text style={styles.subText}>{userData.location?.city}, {userData.location?.country}</Text>
           </>
-        ) : ( 
+        ) : (
           <Text style={styles.loadingText}></Text>
         )}
       </View>
 
-      
+
       <View style={styles.infoSection}>
         <View style={styles.infoItem}>
           <View style={styles.iconCircle}>
@@ -54,7 +54,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>เบอร์โทรศัพท์</Text>
-            <Text style={styles.infoText}>0998767656</Text> 
+            <Text style={styles.infoText}>0998767656</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -63,7 +63,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>อีเมล</Text>
-            <Text style={styles.infoText}>{userData?.email}</Text> 
+            <Text style={styles.infoText}>{userData?.email}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -72,7 +72,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ที่อยู่</Text>
-            <Text style={styles.infoText}>{userData?.location?.city}, {userData?.location?.country}</Text> 
+            <Text style={styles.infoText}>{userData?.location?.city}, {userData?.location?.country}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -81,24 +81,13 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ประเภทความพิการ</Text>
-            <Text style={styles.infoText}>{userData?.disability_type}</Text> 
+            <Text style={styles.infoText}>{userData?.disability_type}</Text>
           </View>
         </View>
       </View>
-
-      <TouchableOpacity
-        style={styles.resumeButton}
-        onPress={() => Linking.openURL('https://example.com/david_resume.pdf')}
-      >
-        <View style={styles.resumeContent}>
-          <Text style={styles.resumeText}>เรซูเม่ของฉัน</Text>
-          <Text style={styles.fileText}>david_resume.pdf</Text>
-        </View>
-        <FontAwesome name="ellipsis-v" size={20} color="#fff" />
-      </TouchableOpacity>
-      
       <Navbar style={styles.navbar} />
     </View>
+
   );
 };
 
@@ -144,6 +133,7 @@ const styles = StyleSheet.create({
   infoSection: {
     marginTop: 30,
     paddingHorizontal: 20,
+    marginBottom: 120,
   },
   infoItem: {
     flexDirection: 'row',
@@ -156,7 +146,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   iconCircle: {
-    backgroundColor: '#DFF7E1', 
+    backgroundColor: '#DFF7E1',
     padding: 10,
     width: 45,
     borderRadius: 50,

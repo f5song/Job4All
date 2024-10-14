@@ -9,17 +9,13 @@ const Navbar = () => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Dadhboard')}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Dashboard')}>
                 <Ionicons name="home-outline" size={24} color="black" />
                 <Text style={styles.text}>หน้าหลัก</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('')}>
+            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Search')}>
                 <Ionicons name="search-outline" size={24} color="black" />
-                <Text style={styles.text}>สัมภาษณ์</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('')}>
-                <Ionicons name="mail-outline" size={24} color="black" />
-                <Text style={styles.text}>ข้อความ</Text>
+                <Text style={styles.text}>ค้นหางาน</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Profile')}>
                 <Ionicons name="person-outline" size={24} color="black" />
