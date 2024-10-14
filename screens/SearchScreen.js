@@ -128,23 +128,21 @@ const SearchScreen = () => {
       </View>
 
       {/* Filter Section */}
-{/* Filter Section */}
-<View style={styles.filterContainer}>
-  {selectedFilters.map((filter, index) => (
-    <View key={index} style={styles.selectedFilter}>
-      <Text style={styles.filterText}>{filter}</Text>
-      <TouchableOpacity
-        style={styles.clearfilter}
-        onPress={() => toggleFilter(filter)}
-      >
-        <View style={styles.circle}>
-          <Text style={styles.clearButtonfilter}>x</Text>
-        </View>
-      </TouchableOpacity>
-    </View>
-  ))}
-</View>
-
+      <View style={styles.filterContainer}>
+        {selectedFilters.map((filter, index) => (
+          <View key={index} style={styles.selectedFilter}>
+            <Text style={styles.filterText}>{filter}</Text>
+            <TouchableOpacity
+              style={styles.clearfilter}
+              onPress={() => toggleFilter(filter)}
+            >
+              <View style={styles.circle}>
+                <Text style={styles.clearButtonfilter}>X</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
 
       {/* Job Listings */}
       <ScrollView style={styles.jobList}>
@@ -322,11 +320,10 @@ const styles = StyleSheet.create({
   },
   clearButtonfilter: {
     color: "#FFFFFF",
-    fontSize: 18 , // ปรับขนาดตัวอักษรให้เหมาะสม
-    fontFamily: "Mitr-Regular",
+    fontSize: 16, // ปรับขนาดตัวอักษรให้เหมาะสม
   },
   circle: {
-    backgroundColor: "Gray", // สีพื้นหลังของวงกลม (เช่น สีแดงอ่อน)
+    backgroundColor: "#4DB15E", // สีพื้นหลังของวงกลม (เช่น สีแดงอ่อน)
     borderRadius: 20, // ทำให้เป็นวงกลม
     width: 25, // กำหนดความกว้างของวงกลม
     height: 25, // กำหนดความสูงของวงกลม
