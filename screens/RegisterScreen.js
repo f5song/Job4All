@@ -22,7 +22,6 @@ const InputField = ({
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
         />
-        {/* ไอคอนเปิด/ปิดรหัสผ่าน */}
         {setShowPassword && (
             <TouchableOpacity
                 style={styles.eyeIcon}
@@ -57,7 +56,6 @@ const RegisterScreen = ({ navigation }) => {
         const loadFonts = async () => {
             await Font.loadAsync({
                 'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
-                'Mitr-Bold': require('../assets/fonts/Mitr-Bold.ttf'),
                 'Mitr-Medium': require('../assets/fonts/Mitr-Medium.ttf'),
             });
             setFontsLoaded(true);
@@ -67,41 +65,39 @@ const RegisterScreen = ({ navigation }) => {
     }, []);
 
     const handleRegister = async () => {
-        // ตรวจสอบข้อมูลที่กรอก
         if (!username || !email || !password || !confirmPassword) {
             setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
             return;
         }
-    
+
         if (userType === 'ผู้หางาน' && (!firstName || !lastName)) {
             setErrorMessage('โปรดกรอกชื่อจริง นามสกุล');
             return;
         }
-    
+
         if (userType === 'บริษัท' && !companyName) {
             setErrorMessage('โปรดกรอกชื่อบริษัท');
             return;
         }
-    
-        // ตรวจสอบรูปแบบอีเมล
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('โปรดกรอกอีเมลในรูปแบบที่ถูกต้อง');
             return;
         }
-    
+
         if (password.length < 6) {
             setErrorMessage('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');
             return;
         }
-    
+
         if (password !== confirmPassword) {
             setErrorMessage('รหัสผ่านไม่ตรงกัน');
             return;
         }
-    
+
         setErrorMessage('');
-    
+
         try {
             const response = await fetch('http://10.0.2.2:3000/api/register', {
                 method: 'POST',
@@ -115,12 +111,12 @@ const RegisterScreen = ({ navigation }) => {
                     userType,
                     firstName: userType === 'ผู้หางาน' ? firstName : null,
                     lastName: userType === 'ผู้หางาน' ? lastName : null,
-                    companyName: userType === 'บริษัท' ? companyName : null, // ตรวจสอบว่า companyName ถูกส่ง
+                    companyName: userType === 'บริษัท' ? companyName : null,
                 }),
             });
-    
+
             const data = await response.json(); 
-    
+
             if (response.ok) {
                 navigation.navigate('Login', { userType });
             } else {
@@ -130,7 +126,6 @@ const RegisterScreen = ({ navigation }) => {
             setErrorMessage('เกิดข้อผิดพลาดระหว่างการลงทะเบียน');
         }
     };
-    
 
     return (
         <View style={styles.container}>
@@ -230,7 +225,7 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        paddingVertical: 15,
+        paddingVertical: 10,
         paddingHorizontal: 20,
         fontSize: 16,
         fontFamily: 'Mitr-Regular',
@@ -239,31 +234,33 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     button: {
-        backgroundColor: '#007BFF',
+        backgroundColor: '#4CAF50', // Changed color for better visibility
         borderRadius: 25,
         paddingVertical: 15,
         alignItems: 'center',
-        marginVertical: 20,
+        marginBottom: 30,
     },
     buttonText: {
         color: 'white',
         fontSize: 16,
-        fontFamily: 'Mitr-Bold',
+        fontFamily: 'Mitr-Medium', // Changed font family for button
     },
     subtitle: {
-        fontSize: 20,
-        fontFamily: 'Mitr-Bold',
-        marginBottom: 10,
+        fontSize: 20, // Increased size for better visibility
+        fontFamily: 'Mitr-Medium',
+        marginTop: 20,
     },
     description: {
-        fontSize: 14,
+        fontSize: 14, // Increased size for better visibility
         fontFamily: 'Mitr-Regular',
-        marginBottom: 20,
+        marginBottom: 30,
     },
     errorText: {
         color: 'red',
-        marginBottom: 15,
+        marginBottom: 0,
+        paddingVertical: 10,
         fontFamily: 'Mitr-Regular',
+        textAlign: 'center', // Centered error message
     },
     loginText: {
         textAlign: 'center',
@@ -276,14 +273,17 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     loginButton: {
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-    loginButtonText: {
-        fontSize: 16,
-        color: '#007BFF',
-        fontFamily: 'Mitr-Bold',
-    },
+      backgroundColor: '#D9FFDF',
+      borderRadius: 25,
+      padding: 15,
+      alignItems: 'center',
+      marginTop: 20,
+  },
+  loginButtonText: {
+      color: '#4DB15E',
+      fontSize: 16,
+      fontFamily: 'Mitr-Medium',
+  },
 });
 
 export default RegisterScreen;

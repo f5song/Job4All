@@ -54,16 +54,17 @@ const AccountScreen = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#5de76e', '#dcffe1']} 
+        colors={['#5de76e', '#dcffe1']}
         style={styles.header}
       >
         <Image
-          source={require('../assets/profile.png')} 
+          source={require('../assets/profile.png')}
           style={styles.profileImage}
         />
       </LinearGradient>
 
       <View style={styles.profileInfo}>
+        {userData ? (
         {userData ? (
           <>
             <Text style={styles.nameText}>{userData.firstName} {userData.lastName}</Text>
@@ -91,6 +92,7 @@ const AccountScreen = () => {
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>อีเมล</Text>
             <Text style={styles.infoText}>{userData?.email}</Text>
+            <Text style={styles.infoText}>{userData?.email}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -99,6 +101,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ประเภทความพิการ</Text>
+            <Text style={styles.infoText}>{userData?.disability_type}</Text>
             <Text style={styles.infoText}>{userData?.disability_type}</Text>
           </View>
         </View>
@@ -117,6 +120,7 @@ const AccountScreen = () => {
 
       <Navbar style={styles.navbar} />
     </View>
+
   );
 };
 
@@ -163,6 +167,7 @@ const styles = StyleSheet.create({
   infoSection: {
     marginTop: 30,
     paddingHorizontal: 20,
+    marginBottom: 120,
   },
   infoItem: {
     flexDirection: 'row',
@@ -175,6 +180,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   iconCircle: {
+    backgroundColor: '#DFF7E1',
     backgroundColor: '#DFF7E1',
     padding: 10,
     width: 45,
