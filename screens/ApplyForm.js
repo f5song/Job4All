@@ -157,17 +157,6 @@ export default function JobApplicationScreen() {
         <View style={styles.jobTitleContainer}>
           <Text style={styles.jobTitle}>{job ? job.job_title : "N/A"}</Text>
         </View>
-        <View style={styles.iconContainer}>
-          <Image
-            source={{
-              uri:
-                job && job.company_logo
-                  ? job.company_logo
-                  : "https://via.placeholder.com/60",
-            }}
-            style={styles.icon}
-          />
-        </View>
       </View>
       <View style={styles.formContainer}>
         <View style={styles.formHeader}>
@@ -350,6 +339,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     color: "#333",
+    fontFamily: "Mitr-Regular",
   },
   submitButton: {
     backgroundColor: "#4CAF50",

@@ -323,9 +323,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 10,
-    fontFamily: "Mitr-Bold",
+    fontFamily: "Mitr-Medium",
   },
   description: {
     fontSize: 16,

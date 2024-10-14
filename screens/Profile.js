@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Font from 'expo-font';
 import Navbar from '../components/Navbar'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const AccountScreen = () => {
-  const [userData, setUserData] = useState(null); // เก็บข้อมูลผู้ใช้
+  const [userData, setUserData] = useState(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const navigation = useNavigation();
 
-  // โหลดฟอนต์ Mitr-Regular
   useEffect(() => {
     const loadFonts = async () => {
       await Font.loadAsync({
@@ -21,20 +23,19 @@ const AccountScreen = () => {
     loadFonts();
   }, []);
 
-  // ฟังก์ชันเพื่อดึงข้อมูลผู้ใช้จาก API
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const userId = await AsyncStorage.getItem("userId"); // ดึง userId จาก AsyncStorage
+        const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           const response = await fetch(`http://10.0.2.2:3000/api/users/id/${userId}`, {
             headers: {
-              Authorization: `Bearer ${await AsyncStorage.getItem("token")}`, // ดึง token และส่งใน headers
+              Authorization: `Bearer ${await AsyncStorage.getItem("token")}`,
             },
           });
           const data = await response.json();
           if (response.ok) {
-            setUserData(data); // เซ็ตข้อมูลผู้ใช้ใน state
+            setUserData(data);
           } else {
             console.error(data.error);
           }
@@ -46,6 +47,16 @@ const AccountScreen = () => {
 
     fetchUserInfo();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("userId");
+      await AsyncStorage.removeItem("token");
+      navigation.navigate('Login'); // ปรับตามโครงสร้างการนำทางของคุณ
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   if (!fontsLoaded) {
     return <ActivityIndicator size="large" color="#0000ff" />;
@@ -77,20 +88,11 @@ const AccountScreen = () => {
       <View style={styles.infoSection}>
         <View style={styles.infoItem}>
           <View style={styles.iconCircle}>
-            <FontAwesome name="phone" size={24} color="#4CAF50" />
-          </View>
-          <View style={styles.infoTextContainer}>
-            <Text style={styles.label}>เบอร์โทรศัพท์</Text>
-            <Text style={styles.infoText}>{userData?.phone}</Text>
-          </View>
-        </View>
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
             <FontAwesome name="envelope" size={24} color="#4CAF50" />
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>อีเมล</Text>
-            <Text style={styles.infoText}>{userData?.email}</Text>
+            <Text style={styles.infoText}>{userData?.email || 'ไม่มีข้อมูล'}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -99,27 +101,32 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ประเภทความพิการ</Text>
-            <Text style={styles.infoText}>{userData?.disability_type}</Text>
+            <Text style={styles.infoText}>{userData?.disability_type || 'ไม่มีข้อมูล'}</Text>
           </View>
         </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.resumeButton}
-        onPress={() => Linking.openURL(userData?.resume || 'https://example.com/default_resume.pdf')}
-      >
-        <View style={styles.resumeContent}>
-          <Text style={styles.resumeText}>เรซูเม่ของฉัน</Text>
-          <Text style={styles.fileText}>{'resume.pdf'}</Text>
-        </View>
-        <FontAwesome name="ellipsis-v" size={20} color="#fff" />
+      {/* ปุ่มสามจุดสำหรับเมนูที่มุมขวาบน */}
+      <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)} style={styles.menuButton}>
+        <FontAwesome name="ellipsis-v" size={24} color="#333" />
       </TouchableOpacity>
 
-      <Navbar style={styles.navbar} />
+      {/* เมนูออกจากระบบ */}
+      {menuVisible && (
+        <View style={styles.menu}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>ออกจากระบบ</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Navbar ควรอยู่ที่ด้านล่าง */}
+      <View style={styles.navbarContainer}>
+        <Navbar />
+      </View>
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -193,35 +200,44 @@ const styles = StyleSheet.create({
     color: '#333',
     fontFamily: 'Mitr-Regular',
   },
-  resumeButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    margin: 20,
-    borderRadius: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  menuButton: {
+    position: 'absolute', // ใช้ position absolute เพื่อให้ปุ่มอยู่ที่มุมขวาบน
+    right: 20,
+    top: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menu: {
+    position: 'absolute',
+    right: 20,
+    top: 60, // ปรับตำแหน่งเมนูให้อยู่ต่ำกว่าปุ่มสามจุด
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+    padding: 10,
+  },
+  logoutButton: {
+    backgroundColor: '#f44336', 
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
     alignItems: 'center',
   },
-  resumeContent: {
-    flexDirection: 'column',
-  },
-  resumeText: {
-    fontSize: 18,
+  logoutText: {
     color: '#fff',
+    fontSize: 16,
     fontFamily: 'Mitr-Regular',
   },
-  fileText: {
-    fontSize: 14,
-    color: '#fff',
-    marginTop: 5,
-    fontFamily: 'Mitr-Regular',
-  },
-  navbar: {
+  navbarContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    // Adjust padding if needed
+    paddingBottom: 10,
   },
 });
 

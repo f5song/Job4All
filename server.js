@@ -74,7 +74,15 @@ app.get("/api/users/id/:id", async (req, res) => {
       return res.status(404).json({ error: "ไม่พบผู้ใช้" });
     }
 
-    res.json({ firstName: user.firstName, lastName: user.lastName });
+    res.json({ 
+      firstName: user.firstName, 
+      lastName: user.lastName,
+      phone: user.phone,
+      email: user.email,
+      address: user.address,
+      disability_type: user.disabilityType, // Change this line
+      resume: user.resume // Include resume if needed
+    });
   } catch (error) {
     console.error("Error fetching user:", error.message);
     res.status(500).json({
@@ -83,6 +91,7 @@ app.get("/api/users/id/:id", async (req, res) => {
     });
   }
 });
+
 
 
 const authenticateJWT = (req, res, next) => {

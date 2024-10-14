@@ -1,16 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, Button } from "react-native";
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
+import * as Font from 'expo-font'; // Import Font from expo-font
 
 const ApplicantsScreen = ({ route, navigation }) => {
-    const { jobId } = route.params; // ดึง jobId จาก params
+    const { jobId } = route.params; // Get jobId from params
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [fontsLoaded, setFontsLoaded] = useState(false); // State for font loading
+
+    useEffect(() => {
+        const loadFonts = async () => {
+            try {
+                await Font.loadAsync({
+                    "Mitr-Regular": require("../assets/fonts/Mitr-Regular.ttf"),
+                    "Mitr-Bold": require("../assets/fonts/Mitr-Bold.ttf"),
+                    "Mitr-Medium": require("../assets/fonts/Mitr-Medium.ttf"),
+                });
+                setFontsLoaded(true); // Set fonts loaded state to true
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        loadFonts(); // Load fonts
+    }, []);
 
     useEffect(() => {
         const fetchApplicants = async () => {
-            setLoading(true); // เริ่มโหลดข้อมูล
-            setError(null); // ล้างข้อผิดพลาดก่อนหน้า
+            setLoading(true); // Start loading data
+            setError(null); // Clear previous errors
 
             try {
                 const response = await fetch(`http://10.0.2.2:3000/api/applicants/job/${jobId}`);
@@ -34,7 +53,7 @@ const ApplicantsScreen = ({ route, navigation }) => {
         }
     }, [jobId]);
 
-    // รับข้อมูลที่อัปเดตกลับมาจาก EditApplicantScreen
+    // Receive updated applicant data from EditApplicantScreen
     useEffect(() => {
         if (route.params?.updatedApplicant) {
             const updatedApplicant = route.params.updatedApplicant;
@@ -46,8 +65,12 @@ const ApplicantsScreen = ({ route, navigation }) => {
         }
     }, [route.params?.updatedApplicant]);
 
+    if (!fontsLoaded) {
+        return <ActivityIndicator size="large" color="#007BFF" style={styles.loading} />; // Show loading while fonts are loading
+    }
+
     if (loading) {
-        return <ActivityIndicator size="large" color="#007BFF" style={styles.loading} />;
+        return <ActivityIndicator size="large" color="#28A745" style={styles.loading} />;
     }
 
     if (error) {
@@ -59,45 +82,76 @@ const ApplicantsScreen = ({ route, navigation }) => {
     }
 
     return (
-        <FlatList
-            data={applicants}
-            keyExtractor={(item) => item._id}
-            renderItem={({ item }) => (
-                <View style={styles.applicantItem}>
-                    <Text style={styles.applicantName}>{`${item.firstName} ${item.lastName}`}</Text>
-                    <Text>{`หมายเลขโทรศัพท์: ${item.phone}`}</Text>
-                    <Text>{`สถานะการสมัคร: ${item.status}`}</Text>
-                    {item.applied_at && (
-                        <Text>{`วันที่สมัคร: ${new Date(item.applied_at).toLocaleDateString()}`}</Text>
-                    )}
-                    <Button 
-                        title="แก้ไข" 
-                        onPress={() => navigation.navigate("EditApplicant", { applicant: item })} 
-                    />
-                </View>
-            )}
-            contentContainerStyle={styles.listContainer}
-        />
+        <View style={styles.container}>
+            <Text style={styles.headerText}>รายชื่อผู้สมัครงาน</Text>
+            <FlatList
+                data={applicants}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={styles.applicantItem}>
+                        <Text style={styles.applicantName}>{`${item.firstName} ${item.lastName}`}</Text>
+                        <Text style={styles.applicantInfo}>{`หมายเลขโทรศัพท์: ${item.phone}`}</Text>
+                        <Text style={styles.applicantInfo}>{`สถานะการสมัคร: ${item.status}`}</Text>
+                        {item.applied_at && (
+                            <Text style={styles.applicantInfo}>{`วันที่สมัคร: ${new Date(item.applied_at).toLocaleDateString()}`}</Text>
+                        )}
+                        <TouchableOpacity 
+                            style={styles.editButton}
+                            onPress={() => navigation.navigate("EditApplicant", { applicant: item })}>
+                            <Text style={styles.editButtonText}>แก้ไข</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+                contentContainerStyle={styles.listContainer}
+            />
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
+    headerText: {
+        fontSize: 20,
+        color: '#333',
+        fontFamily: 'Mitr-Medium', // Use your custom font here
+        marginBottom: 20,
+        marginTop: 30
+    },
+    editButton: {
+        backgroundColor: '#28A745', // Change button color to green
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 20,
+        alignItems: 'center', // Center the text
+    },
+    editButtonText: {
+        color: '#FFFFFF', // White text color
+        fontFamily: 'Mitr-Medium', // Use custom font
+        fontSize: 16, // Adjust font size
+    },
+    container: {
+        flex: 1,
+        padding: 20,
+        backgroundColor: '#F9F9F9',
+    },
     loading: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
     errorText: {
-        color: 'red',
+        color: '#FF4136',
         textAlign: 'center',
         margin: 20,
+        fontFamily: 'Mitr-Regular',
     },
     noApplicantsText: {
         textAlign: 'center',
         margin: 20,
+        fontFamily: 'Mitr-Regular',
     },
     listContainer: {
         padding: 16,
+        backgroundColor: '#F9F9F9',
     },
     applicantItem: {
         padding: 16,
@@ -114,6 +168,14 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '600',
         color: '#333',
+        fontFamily: 'Mitr-Medium', // Use your custom font here
+        marginBottom: 10,
+    },
+    applicantInfo: {
+        fontSize: 16,
+        color: '#555',
+        fontFamily: 'Mitr-Regular', // Use your custom font here
+        marginBottom: 5,
     },
 });
 
