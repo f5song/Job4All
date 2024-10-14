@@ -1,29 +1,58 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Linking, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Navbar from '../components/Navbar'; // แก้ไขเส้นทางให้ตรงกับตำแหน่งไฟล์
-const AccountScreen = () => {
-  const [userData, setUserData] = useState(null);
+import * as Font from 'expo-font';
+import Navbar from '../components/Navbar'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const AccountScreen = () => {
+  const [userData, setUserData] = useState(null); // เก็บข้อมูลผู้ใช้
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  // โหลดฟอนต์ Mitr-Regular
   useEffect(() => {
-    const fetchData = async () => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        'Mitr-Regular': require('../assets/fonts/Mitr-Regular.ttf'),
+      });
+      setFontsLoaded(true);
+    };
+    loadFonts();
+  }, []);
+
+  // ฟังก์ชันเพื่อดึงข้อมูลผู้ใช้จาก API
+  useEffect(() => {
+    const fetchUserInfo = async () => {
       try {
-        const response = await fetch('http://10.0.2.2:3000/data');
-        const data = await response.json();
-        console.log('data1000: ', data);
-        setUserData(data.users[0]); 
+        const userId = await AsyncStorage.getItem("userId"); // ดึง userId จาก AsyncStorage
+        if (userId) {
+          const response = await fetch(`http://10.0.2.2:3000/api/users/id/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${await AsyncStorage.getItem("token")}`, // ดึง token และส่งใน headers
+            },
+          });
+          const data = await response.json();
+          if (response.ok) {
+            setUserData(data); // เซ็ตข้อมูลผู้ใช้ใน state
+          } else {
+            console.error(data.error);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching user info:', error);
       }
     };
 
-    fetchData();
-  }, []); 
+    fetchUserInfo();
+  }, []);
+
+  if (!fontsLoaded) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
 
   return (
     <View style={styles.container}>
-     
       <LinearGradient
         colors={['#5de76e', '#dcffe1']} 
         style={styles.header}
@@ -34,19 +63,17 @@ const AccountScreen = () => {
         />
       </LinearGradient>
 
-     
       <View style={styles.profileInfo}>
-        {userData ? ( 
+        {userData ? (
           <>
-            <Text style={styles.nameText}>{userData.name}</Text>
-            <Text style={styles.subText}>{userData.location?.city}, {userData.location?.country}</Text>
+            <Text style={styles.nameText}>{userData.firstName} {userData.lastName}</Text>
+            <Text style={styles.subText}>{userData.address}</Text>
           </>
-        ) : ( 
-          <Text style={styles.loadingText}></Text>
+        ) : (
+          <Text style={styles.loadingText}>กำลังโหลดข้อมูล...</Text>
         )}
       </View>
 
-      
       <View style={styles.infoSection}>
         <View style={styles.infoItem}>
           <View style={styles.iconCircle}>
@@ -54,7 +81,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>เบอร์โทรศัพท์</Text>
-            <Text style={styles.infoText}>0998767656</Text> 
+            <Text style={styles.infoText}>{userData?.phone}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -63,16 +90,7 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>อีเมล</Text>
-            <Text style={styles.infoText}>{userData?.email}</Text> 
-          </View>
-        </View>
-        <View style={styles.infoItem}>
-          <View style={styles.iconCircle}>
-            <FontAwesome name="map-marker" size={24} color="#4CAF50" />
-          </View>
-          <View style={styles.infoTextContainer}>
-            <Text style={styles.label}>ที่อยู่</Text>
-            <Text style={styles.infoText}>{userData?.location?.city}, {userData?.location?.country}</Text> 
+            <Text style={styles.infoText}>{userData?.email}</Text>
           </View>
         </View>
         <View style={styles.infoItem}>
@@ -81,26 +99,27 @@ const AccountScreen = () => {
           </View>
           <View style={styles.infoTextContainer}>
             <Text style={styles.label}>ประเภทความพิการ</Text>
-            <Text style={styles.infoText}>{userData?.disability_type}</Text> 
+            <Text style={styles.infoText}>{userData?.disability_type}</Text>
           </View>
         </View>
       </View>
 
       <TouchableOpacity
         style={styles.resumeButton}
-        onPress={() => Linking.openURL('https://example.com/david_resume.pdf')}
+        onPress={() => Linking.openURL(userData?.resume || 'https://example.com/default_resume.pdf')}
       >
         <View style={styles.resumeContent}>
           <Text style={styles.resumeText}>เรซูเม่ของฉัน</Text>
-          <Text style={styles.fileText}>david_resume.pdf</Text>
+          <Text style={styles.fileText}>{'resume.pdf'}</Text>
         </View>
         <FontAwesome name="ellipsis-v" size={20} color="#fff" />
       </TouchableOpacity>
-      
+
       <Navbar style={styles.navbar} />
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -156,7 +175,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   iconCircle: {
-    backgroundColor: '#DFF7E1', 
+    backgroundColor: '#DFF7E1',
     padding: 10,
     width: 45,
     borderRadius: 50,

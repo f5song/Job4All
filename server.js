@@ -3,11 +3,11 @@ const jwt = require("jsonwebtoken");
 const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const cors = require("cors"); // นำเข้า cors ที่นี่
-const bodyParser = require("body-parser"); // เพิ่มการนำเข้า body-parser
+const cors = require("cors"); 
+const bodyParser = require("body-parser"); 
 const app = express();
 
-// เชื่อมต่อ MongoDB
+
 mongoose
   .connect("mongodb://localhost:27017/job4all", {
     useNewUrlParser: true,
@@ -16,7 +16,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("Could not connect to MongoDB:", err));
 
-// สร้าง Schema สำหรับผู้ใช้
+
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-// สร้าง Schema สำหรับ job listings
+
 const jobListingSchema = new mongoose.Schema(
   {
     job_title: { type: String, required: true },
@@ -46,17 +46,17 @@ const jobListingSchema = new mongoose.Schema(
     job_type: { type: String },
     work_schedule: { type: String },
   },
-  { collection: "job_listings", timestamps: true } // Added timestamps here
+  { collection: "job_listings", timestamps: true } 
 );
 
 const JobListing = mongoose.model("JobListing", jobListingSchema);
 
-// Middleware สำหรับการ parse JSON และใช้งาน CORS
+
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json()); // เพิ่มบรรทัดนี้เพื่อใช้ body-parser
+app.use(bodyParser.json()); 
 
-// Route สำหรับดึงข้อมูลผู้ใช้ทั้งหมด
+
 app.get("/data", async (req, res) => {
   try {
     const users = await User.find();
@@ -66,7 +66,7 @@ app.get("/data", async (req, res) => {
   }
 });
 
-// Route สำหรับดึงข้อมูลผู้ใช้ตาม ID
+
 app.get("/api/users/id/:id", async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
@@ -88,7 +88,7 @@ app.get("/api/users/id/:id", async (req, res) => {
   }
 });
 
-// Middleware สำหรับการตรวจสอบ JWT
+
 const authenticateJWT = (req, res, next) => {
   const token = req.headers["authorization"]?.split(" ")[1];
 
@@ -109,7 +109,7 @@ app.get("/api/protected", authenticateJWT, (req, res) => {
   res.send("คุณได้เข้าถึงข้อมูลที่ต้องการการยืนยันตัวตน");
 });
 
-// Route สำหรับค้นหางานพร้อมฟิลเตอร์
+
 app.get("/api/jobs", async (req, res) => {
   const { search, job_type, work_schedule, province } = req.query;
 
@@ -137,7 +137,7 @@ app.get("/api/jobs", async (req, res) => {
   }
 });
 
-// Route สำหรับดึงข้อมูลงานตาม ID
+
 app.get("/api/jobs/:id", async (req, res) => {
   try {
     const job = await JobListing.findById(req.params.id);
@@ -151,7 +151,7 @@ app.get("/api/jobs/:id", async (req, res) => {
   }
 });
 
-// Route สำหรับการลงทะเบียนผู้ใช้ใหม่
+
 app.post("/api/register", async (req, res) => {
   const {
     username,
@@ -192,7 +192,7 @@ app.post("/api/register", async (req, res) => {
       userType,
       firstName: userType === "ผู้หางาน" ? firstName : undefined,
       lastName: userType === "ผู้หางาน" ? lastName : undefined,
-      companyName: userType === "บริษัท" ? companyName : undefined, // ตรวจสอบว่า companyName ถูกบันทึก
+      companyName: userType === "บริษัท" ? companyName : undefined, 
     });
     await newUser.save();
 
@@ -224,8 +224,7 @@ app.post("/api/login", async (req, res) => {
       return res.status(400).json({ error: "รหัสผ่านไม่ถูกต้อง" });
     }
 
-    // ตรวจสอบว่า companyName ถูกดึงมาถูกต้อง
-    console.log("User from DB:", user); // ตรวจสอบข้อมูลผู้ใช้จากฐานข้อมูล
+    console.log("User from DB:", user); 
 
     const token = jwt.sign(
       { id: user._id, username: user.username, userType: user.userType },
@@ -238,7 +237,7 @@ app.post("/api/login", async (req, res) => {
       token,
       userId: user._id,
       userType: user.userType,
-      companyName: user.companyName, // ส่ง companyName กลับไป
+      companyName: user.companyName, 
     });
   } catch (error) {
     console.error("Error during login:", error);
@@ -248,17 +247,17 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Schema สำหรับการสมัครงาน
+
 const ApplicationSchema = new mongoose.Schema(
   {
     user_id: { type: String, required: true },
     job_id: { type: String, required: true },
     status: { type: String, default: "pending" },
     applied_at: { type: Date, default: Date.now },
-    firstName: { type: String, required: true }, // เพิ่มฟิลด์ firstName
-    lastName: { type: String, required: true }, // เพิ่มฟิลด์ lastName
-    phone: { type: String, required: true }, // เพิ่มฟิลด์ phone
-    resume: { type: String, required: true }, // ฟิลด์ที่ใช้เก็บที่อยู่ของไฟล์เรซูเม่
+    firstName: { type: String, required: true }, 
+    lastName: { type: String, required: true }, 
+    phone: { type: String, required: true }, 
+    resume: { type: String, required: true }, 
   },
   { collection: "applications" }
 );
@@ -270,7 +269,6 @@ const upload = multer({ dest: "uploads/" }); // เก็บไฟล์ใน�
 app.post("/api/applications", upload.single("resume"), async (req, res) => {
   const { user_id, job_id, status, firstName, lastName, phone } = req.body;
 
-  // ตรวจสอบข้อมูล
   if (
     !user_id ||
     !job_id ||
@@ -291,7 +289,7 @@ app.post("/api/applications", upload.single("resume"), async (req, res) => {
       firstName,
       lastName,
       phone,
-      resume: req.file.path, // บันทึกที่อยู่ของไฟล์เรซูเม่
+      resume: req.file.path, 
     });
 
     await application.save();
@@ -305,7 +303,7 @@ app.post("/api/applications", upload.single("resume"), async (req, res) => {
 app.get("/api/jobs_company/:company_name", async (req, res) => {
   const { company_name } = req.params;
   try {
-    const jobs = await JobListing.find({ company_name }); // ตรวจสอบว่า field นี้ตรงกับชื่อในฐานข้อมูลหรือไม่
+    const jobs = await JobListing.find({ company_name }); 
     res.json(jobs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching jobs" });
@@ -339,7 +337,7 @@ app.post("/api/jobs/add", async (req, res) => {
     await newJob.save();
     res.status(201).json({ message: "Job added successfully!" });
   } catch (error) {
-    console.error("Error adding job:", error); // เพิ่มบรรทัดนี้เพื่อดูข้อผิดพลาดใน console
+    console.error("Error adding job:", error); 
     res.status(500).json({ message: "Error adding job", error: error.message });
   }
 });
@@ -357,8 +355,8 @@ const applicationSchema = new mongoose.Schema({
 
 app.get("/api/applicants/job/:jobId", async (req, res) => {
   try {
-    const jobId = req.params.jobId; // รับ jobId จาก params
-    const applicants = await Application.find({ job_id: jobId }); // ค้นหาผู้สมัครที่มี job_id ตรงกับ jobId
+    const jobId = req.params.jobId; 
+    const applicants = await Application.find({ job_id: jobId }); 
 
     if (applicants.length === 0) {
       return res.status(404).json({ message: "ไม่พบผู้สมัครสำหรับงานนี้" });
@@ -371,26 +369,26 @@ app.get("/api/applicants/job/:jobId", async (req, res) => {
   }
 });
 
-// Route สำหรับการอัปเดตสถานะผู้สมัคร
+
 app.put("/api/applicants/:id", async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
-  // ตรวจสอบว่ารับสถานะที่ถูกต้อง
+
   if (!["Pending", "Approved", "Rejected"].includes(status)) {
     return res.status(400).json({ error: "สถานะไม่ถูกต้อง" });
   }
 
   try {
-    // ตรวจสอบว่ามีผู้สมัครที่ตรงตาม id ที่ส่งมา
+    
     const application = await Application.findById(id);
     if (!application) {
       return res.status(404).json({ error: "ไม่พบผู้สมัครที่ต้องการอัปเดต" });
     }
 
-    // อัปเดตสถานะ
+
     application.status = status;
-    await application.save(); // บันทึกการอัปเดต
+    await application.save(); 
 
     res.json(application);
   } catch (error) {
@@ -399,7 +397,7 @@ app.put("/api/applicants/:id", async (req, res) => {
   }
 });
 
-// Route สำหรับการสมัครงาน
+
 app.post("/api/applications", upload.single("resume"), async (req, res) => {
   const { user_id, job_id, firstName, lastName, phone } = req.body;
 
@@ -426,28 +424,26 @@ app.post("/api/applications", upload.single("resume"), async (req, res) => {
 });
 
 
-// แก้ไขงานตาม jobId
+
 app.put('/api/jobs/:id', async (req, res) => {
   const { id } = req.params;
 
-  // ตรวจสอบให้แน่ใจว่า id เป็น ID ที่ถูกต้อง
+  
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(400).json({ message: "ID ที่ส่งมาไม่ถูกต้อง" });
   }
 
   try {
-    // ค้นหางานและอัปเดตข้อมูล
+
     const updatedJob = await JobListing.findByIdAndUpdate(id, req.body, {
       new: true,
-      runValidators: true, // ตรวจสอบให้แน่ใจว่าข้อมูลที่ส่งเข้ามาถูกต้องตาม schema
+      runValidators: true, 
     });
 
-    // ตรวจสอบว่าพบงานที่ต้องการอัปเดตหรือไม่
     if (!updatedJob) {
       return res.status(404).json({ message: 'ไม่พบงานที่ต้องการอัปเดต' });
     }
 
-    // ส่งข้อมูลงานที่อัปเดตกลับไป
     res.json(updatedJob);
   } catch (error) {
     console.error("Error updating job:", error);
@@ -457,7 +453,6 @@ app.put('/api/jobs/:id', async (req, res) => {
 
 
 
-// เริ่มเซิร์ฟเวอร์
 app.listen(3000, () => {
   console.log("Server running on port 3000");
 });
