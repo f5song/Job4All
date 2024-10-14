@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import Icon from 'react-native-vector-icons/FontAwesome'; // ติดตั้งไอคอนที่ต้องการ
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const JobManagementScreen = ({ route }) => {
     const { companyName } = route.params;
@@ -34,23 +34,22 @@ const JobManagementScreen = ({ route }) => {
         }
 
         const unsubscribe = navigation.addListener('focus', () => {
-            fetchJobs(); // เรียกใช้ fetchJobs เมื่อกลับมาที่หน้า
+            fetchJobs(); // Fetch jobs when coming back to the screen
         });
 
-        // ลบ listener เมื่อ component ถูก unmount
-        return unsubscribe;
+        return unsubscribe; // Clean up the listener
     }, [companyName, navigation]);
 
     if (loading) {
-        return <ActivityIndicator size="large" color="#007BFF" />;
+        return <ActivityIndicator size="large" color="#28A745" style={styles.loader} />;
     }
 
     if (error) {
-        return <Text>เกิดข้อผิดพลาด: {error}</Text>;
+        return <Text style={styles.errorText}>เกิดข้อผิดพลาด: {error}</Text>;
     }
 
     if (jobs.length === 0) {
-        return <Text>ไม่พบงานสำหรับบริษัทของคุณ</Text>;
+        return <Text style={styles.noJobsText}>ไม่พบงานสำหรับบริษัทของคุณ</Text>;
     }
 
     return (
@@ -71,7 +70,7 @@ const JobManagementScreen = ({ route }) => {
                     <View style={styles.jobItem}>
                         <TouchableOpacity 
                             style={styles.jobDetailContainer}
-                            onPress={() => navigation.navigate('Applicants', { jobId: item._id })} // ส่ง jobId ไปที่หน้า Applicants
+                            onPress={() => navigation.navigate('Applicants', { jobId: item._id })} // Pass jobId to Applicants screen
                         >
                             <Text style={styles.jobTitle}>{item.job_title}</Text>
                             <Text style={styles.jobDetail}>{`สถานที่: ${item.job_location}`}</Text>
@@ -80,12 +79,14 @@ const JobManagementScreen = ({ route }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={styles.editButton}
-                            onPress={() => navigation.navigate('EditAJob', { jobId: item._id })} // ส่ง jobId ไปที่หน้า EditJob
+                            onPress={() => navigation.navigate('EditAJob', { jobId: item._id })} // Pass jobId to EditJob screen
                         >
-                            <Icon name="pencil" size={20} color="#007BFF" />
+                            <Icon name="pencil" size={20} color="#28A745" />
                         </TouchableOpacity>
                     </View>
                 )}
+                showsVerticalScrollIndicator={false} // Hide vertical scroll indicator
+                contentContainerStyle={styles.flatListContent} // Add padding to the FlatList
             />
         </View>
     );
@@ -94,47 +95,28 @@ const JobManagementScreen = ({ route }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        padding: 30,
         backgroundColor: '#F9F9F9',
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
         marginBottom: 16,
     },
     addButton: {
-        backgroundColor: '#007BFF',
+        backgroundColor: '#28A745',
         borderRadius: 25,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowRadius: 5,
         elevation: 3,
     },
     addButtonText: {
         color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 18,
         textAlign: 'center',
-    },
-    viewApplicantsButton: {
-        backgroundColor: '#28A745', // สีเขียว
-        borderRadius: 25,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 3,
-    },
-    viewApplicantsButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        textAlign: 'center',
+        fontFamily: "Mitr-Medium", // Custom font applied
     },
     jobItem: {
         flexDirection: 'row',
@@ -142,7 +124,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 16,
         backgroundColor: '#FFFFFF',
-        borderRadius: 8,
+        borderRadius: 10,
         marginVertical: 8,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
@@ -151,26 +133,50 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     jobDetailContainer: {
-        flex: 1, // ทำให้ jobDetailContainer ขยายเต็มพื้นที่
+        flex: 1,
     },
     jobTitle: {
         fontSize: 18,
-        fontWeight: '600',
         color: '#333',
+        fontFamily: "Mitr-Medium",  // Custom font applied
     },
     jobDetail: {
         fontSize: 14,
         color: '#666',
         marginVertical: 2,
+        fontFamily: "Mitr-Regular", // Custom font applied
     },
     jobDescription: {
         fontSize: 12,
         color: '#888',
         marginTop: 8,
         lineHeight: 18,
+        fontFamily: "Mitr-Regular", // Custom font applied
     },
     editButton: {
-        marginLeft: 16, // เพิ่มระยะห่างระหว่างปุ่มแก้ไขและรายละเอียดงาน
+        marginLeft: 16,
+        padding: 8, // Add some padding for better touch target
+        borderRadius: 5, // Slight rounding for the edit button
+    },
+    loader: {
+        marginTop: 20,
+    },
+    errorText: {
+        color: 'red',
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        fontFamily: "Mitr-Regular", // Custom font applied
+    },
+    noJobsText: {
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        color: '#888',
+        fontFamily: "Mitr-Regular", // Custom font applied
+    },
+    flatListContent: {
+        paddingBottom: 80, // Add bottom padding to the FlatList content
     },
 });
 
