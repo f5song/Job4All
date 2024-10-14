@@ -17,20 +17,16 @@ mongoose
   .catch((err) => console.error("Could not connect to MongoDB:", err));
 
 
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  userType: { type: String, required: true },
-  disability_type: String,
-  location: {
-    city: String,
-    country: String,
-  },
-  firstName: { type: String },
-  lastName: { type: String },
-  companyName: { type: String },
-});
+  const userSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    userType: { type: String, required: true },
+    firstName: { type: String },
+    lastName: { type: String },
+    companyName: { type: String },
+    disabilityType: { type: String }, // Ensure this field exists
+  });
 
 const User = mongoose.model("User", userSchema);
 
@@ -161,8 +157,11 @@ app.post("/api/register", async (req, res) => {
     firstName,
     lastName,
     companyName,
+    disabilityType, // Extracting disabilityType
   } = req.body;
+  console.log("Received disabilityType:", disabilityType); // Debugging
 
+  // Check for required fields
   if (!username || !email || !password || !userType) {
     return res.status(400).json({ error: "โปรดกรอกข้อมูลให้ครบถ้วน" });
   }
@@ -171,9 +170,14 @@ app.post("/api/register", async (req, res) => {
     if (!companyName) {
       return res.status(400).json({ error: "โปรดกรอกชื่อบริษัท" });
     }
+  } else if (userType === "ผู้หางาน") {
+    if (!disabilityType) { // This check is for job seekers
+      return res.status(400).json({ error: "โปรดเลือกประเภทความพิการ" });
+    }
   }
 
   try {
+    // Check for existing users by email and username
     const existingUserByEmail = await User.findOne({ email });
     if (existingUserByEmail) {
       return res.status(400).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
@@ -184,7 +188,10 @@ app.post("/api/register", async (req, res) => {
       return res.status(400).json({ error: "ชื่อผู้ใช้นี้มีอยู่แล้ว" });
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user with the disability type
     const newUser = new User({
       username,
       email,
@@ -192,8 +199,10 @@ app.post("/api/register", async (req, res) => {
       userType,
       firstName: userType === "ผู้หางาน" ? firstName : undefined,
       lastName: userType === "ผู้หางาน" ? lastName : undefined,
-      companyName: userType === "บริษัท" ? companyName : undefined, 
+      companyName: userType === "บริษัท" ? companyName : undefined,
+      disabilityType: userType === "ผู้หางาน" ? disabilityType : undefined, // Add disabilityType for job seekers
     });
+
     await newUser.save();
 
     res.status(201).json({ message: "ลงทะเบียนผู้ใช้สำเร็จ" });
@@ -204,6 +213,7 @@ app.post("/api/register", async (req, res) => {
       .json({ error: "เกิดข้อผิดพลาดขณะลงทะเบียน โปรดลองใหม่อีกครั้ง." });
   }
 });
+
 
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
