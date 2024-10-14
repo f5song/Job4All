@@ -72,36 +72,36 @@ const RegisterScreen = ({ navigation }) => {
             setErrorMessage('โปรดกรอกข้อมูลให้ครบถ้วน');
             return;
         }
-
+    
         if (userType === 'ผู้หางาน' && (!firstName || !lastName)) {
             setErrorMessage('โปรดกรอกชื่อจริง นามสกุล');
             return;
         }
-
+    
         if (userType === 'บริษัท' && !companyName) {
             setErrorMessage('โปรดกรอกชื่อบริษัท');
             return;
         }
-
+    
         // ตรวจสอบรูปแบบอีเมล
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setErrorMessage('โปรดกรอกอีเมลในรูปแบบที่ถูกต้อง');
             return;
         }
-
+    
         if (password.length < 6) {
             setErrorMessage('รหัสผ่านต้องมีอย่างน้อย 6 ตัว');
             return;
         }
-
+    
         if (password !== confirmPassword) {
             setErrorMessage('รหัสผ่านไม่ตรงกัน');
             return;
         }
-
+    
         setErrorMessage('');
-
+    
         try {
             const response = await fetch('http://10.0.2.2:3000/api/register', {
                 method: 'POST',
@@ -115,12 +115,12 @@ const RegisterScreen = ({ navigation }) => {
                     userType,
                     firstName: userType === 'ผู้หางาน' ? firstName : null,
                     lastName: userType === 'ผู้หางาน' ? lastName : null,
-                    companyName: userType === 'บริษัท' ? companyName : null,
+                    companyName: userType === 'บริษัท' ? companyName : null, // ตรวจสอบว่า companyName ถูกส่ง
                 }),
             });
-
+    
             const data = await response.json(); 
-
+    
             if (response.ok) {
                 navigation.navigate('Login', { userType });
             } else {
@@ -130,6 +130,7 @@ const RegisterScreen = ({ navigation }) => {
             setErrorMessage('เกิดข้อผิดพลาดระหว่างการลงทะเบียน');
         }
     };
+    
 
     return (
         <View style={styles.container}>

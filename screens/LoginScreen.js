@@ -86,16 +86,24 @@ const LoginScreen = () => {
 
       const data = await response.json();
       console.log("Data from server:", data); // ตรวจสอบค่าที่ได้รับจากเซิร์ฟเวอร์
-      console.log("User type from API:", data.userType); // ตรวจสอบ userType ที่ได้จาก API
 
       if (response.ok) {
         await AsyncStorage.setItem("userId", data.userId.toString());
         await AsyncStorage.setItem("token", data.token);
 
         if (data.userType === "บริษัท") {
-          navigation.navigate("JobManagement", {
-            userType: data.userType,
-          });
+          console.log("Company Name:", data.companyName); // ตรวจสอบค่าของ companyName
+          if (data.companyName) {
+            navigation.navigate("JobManagement", {
+              userType: data.userType,
+              companyName: data.companyName,
+            });
+          } else {
+            console.log("Data from server:", data); // ตรวจสอบข้อมูลทั้งหมดจาก API
+            console.log("Company Name:", data.companyName); // ตรวจสอบ companyName
+
+            Alert.alert("เกิดข้อผิดพลาด", "ไม่พบชื่อบริษัทของคุณ");
+          }
         } else {
           navigation.navigate("Dashboard", {
             userId: data.userId,
