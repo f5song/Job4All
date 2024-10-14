@@ -12,13 +12,15 @@ import AddAJobScreen from './screens/AddAJobScreen';
 import EditAJobScreen from './screens/EditAJobScreen';
 import ApplyFormScreen from './screens/ApplyForm';
 
+import JobManagementScreen from './screens/JobManagementScreen';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Welcome">
+      <Stack.Navigator initialRouteName="Notification">
         <Stack.Screen 
           name="Welcome" 
           component={WelcomeScreen} 
@@ -59,6 +61,10 @@ export default function App() {
         <Stack.Screen
           name="ApplyForm" 
           component={ApplyFormScreen}
+        />
+        <Stack.Screen
+          name="JobManagement" 
+          component={JobManagementScreen}
         />
 
       </Stack.Navigator>

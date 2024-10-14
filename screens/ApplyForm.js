@@ -15,8 +15,12 @@ import { useRoute } from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function JobApplicationScreen() {
+  const navigation = useNavigation();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -115,7 +119,9 @@ export default function JobApplicationScreen() {
         }
       );
       console.log("Form submitted", response.data);
-      Alert.alert("สำเร็จ", "สมัครงานสำเร็จแล้ว!");
+      Alert.alert("สำเร็จ", "สมัครงานสำเร็จแล้ว!", [
+        { text: "ตกลง", onPress: () => navigation.navigate("Dashboard") }, // นำทางไปยังหน้าแดชบอร์ด
+      ]);
     } catch (error) {
       console.error("Error submitting form:", error);
       Alert.alert(

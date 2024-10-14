@@ -225,6 +225,7 @@ app.post("/api/login", async (req, res) => {
 
   try {
     const user = await User.findOne({ username });
+
     if (!user) {
       return res.status(400).json({ error: "ไม่พบผู้ใช้" });
     }
@@ -235,25 +236,23 @@ app.post("/api/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, username: user.username },
+      { id: user._id, username: user.username, userType: user.userType }, // เพิ่ม userType ใน payload
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // ส่ง userId กลับไปใน response
-    console.log("User ID:", user._id); // เพิ่มคำสั่งนี้เพื่อดูค่า userId
     res.status(200).json({
       message: "เข้าสู่ระบบสำเร็จ",
       token,
-      userId: user._id, // เพิ่ม userId ที่นี่
+      userId: user._id,
+      userType: user.userType, // ส่ง userType กลับไป
     });
   } catch (error) {
     console.error("Error during login:", error);
-    res
-      .status(500)
-      .json({ error: "เกิดข้อผิดพลาดขณะเข้าสู่ระบบ โปรดลองใหม่อีกครั้ง." });
+    res.status(500).json({ error: "เกิดข้อผิดพลาดขณะเข้าสู่ระบบ โปรดลองใหม่อีกครั้ง." });
   }
 });
+
 
 // Schema สำหรับการสมัครงาน
 const ApplicationSchema = new mongoose.Schema(
@@ -309,8 +308,50 @@ app.post("/api/applications", upload.single("resume"), async (req, res) => {
   }
 });
 
-// ฟังค์ชั่นเริ่มต้นเซิร์ฟเวอร์
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+
+
+
+app.get('/api/jobs_company/:company_name', async (req, res) => {
+  const { company_name } = req.params; // รับค่า company_name จากพารามิเตอร์
+  try {
+      const jobs = await JobListing.find({ company_name }); // ค้นหาข้อมูลตาม company_name
+      res.json(jobs);
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching jobs' });
+  }
+});
+
+
+
+app.post('/api/jobs/add', async (req, res) => {
+  try {
+      const { job_title, job_location, job_salary, job_description, company_name, job_type, work_schedule, province } = req.body;
+
+      const newJob = new JobListing({
+          job_title,
+          job_location,
+          job_salary,
+          job_description,
+          company_name,
+          job_type,
+          work_schedule,
+          province,
+      });
+
+      await newJob.save();
+      res.status(201).json({ message: 'Job added successfully!' });
+  } catch (error) {
+      console.error('Error adding job:', error); // เพิ่มบรรทัดนี้เพื่อดูข้อผิดพลาดใน console
+      res.status(500).json({ message: 'Error adding job', error: error.message });
+  }
+});
+
+
+
+
+
+
+// เริ่มเซิร์ฟเวอร์
+app.listen(3000, () => {
+  console.log("Server running on port 3000");
 });

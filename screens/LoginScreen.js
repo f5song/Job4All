@@ -5,14 +5,14 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Image,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Font from "expo-font";
-import { useRoute } from "@react-navigation/native"; 
-import AsyncStorage from "@react-native-async-storage/async-storage"; 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation, useRoute } from "@react-navigation/native"; // Import useRoute
 
 const InputField = ({
   placeholder,
@@ -46,9 +46,10 @@ const InputField = ({
   </View>
 );
 
-const LoginScreen = ({ navigation }) => {
-  const route = useRoute();
-  const { userType } = route.params || {};
+const LoginScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute(); // Get route
+  const { userType } = route.params || {}; // Extract userType from route.params
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -75,41 +76,47 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
     setErrorMessage("");
     try {
-        const response = await fetch("http://10.0.2.2:3000/api/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-        });
-  
-        const data = await response.json();
-  
-        if (response.ok) {
-            console.log("Data from server:", data); // ดูข้อมูลที่ได้รับจากเซิร์ฟเวอร์
-            if (data.userId) {  // ตรวจสอบว่ามีค่า userId หรือไม่
-                await AsyncStorage.setItem("userId", data.userId.toString()); // แปลงให้เป็น string
-            } else {
-                console.warn("userId is undefined");
-            }
-            await AsyncStorage.setItem("token", data.token);
-  
-            Alert.alert("เข้าสู่ระบบสำเร็จ", "คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!");
-            navigation.navigate("Dashboard", { userId: data.userId });
+      const response = await fetch("http://10.0.2.2:3000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+      console.log("Data from server:", data); // ตรวจสอบค่าที่ได้รับจากเซิร์ฟเวอร์
+      console.log("User type from API:", data.userType); // ตรวจสอบ userType ที่ได้จาก API
+
+      if (response.ok) {
+        await AsyncStorage.setItem("userId", data.userId.toString());
+        await AsyncStorage.setItem("token", data.token);
+
+        if (data.userType === "บริษัท") {
+          navigation.navigate("JobManagement", {
+            userType: data.userType,
+          });
         } else {
-            const message = data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
-            setErrorMessage(message);
-            Alert.alert("เข้าสู่ระบบล้มเหลว", message);
+          navigation.navigate("Dashboard", {
+            userId: data.userId,
+            userType: data.userType,
+          });
         }
+
+        Alert.alert("เข้าสู่ระบบสำเร็จ", "คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!");
+      } else {
+        const message = data.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        setErrorMessage(message);
+        Alert.alert("เข้าสู่ระบบล้มเหลว", message);
+      }
     } catch (error) {
-        console.error("Error saving user ID:", error);
-        setErrorMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
-        Alert.alert("เกิดข้อผิดพลาด", "โปรดลองใหม่อีกครั้ง");
+      console.error("Error saving user ID:", error);
+      setErrorMessage("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+      Alert.alert("เกิดข้อผิดพลาด", "โปรดลองใหม่อีกครั้ง");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
-  
+  };
 
   const renderErrorMessage = () => {
     if (errorMessage !== "") {
