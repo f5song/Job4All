@@ -81,7 +81,7 @@ app.get("/api/users/id/:id", async (req, res) => {
       email: user.email,
       address: user.address,
       disability_type: user.disabilityType, // Change this line
-      resume: user.resume // Include resume if needed
+      resume: user.resume 
     });
   } catch (error) {
     console.error("Error fetching user:", error.message);
